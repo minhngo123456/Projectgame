@@ -1,0 +1,20 @@
+# depslib dependency file v1.0
+1742184058 source:c:\users\admin\onedrive\máy tính\ccc\hocthu3\main.cpp
+	<iostream>
+	<SDL.h>
+	<SDL_image.h>
+	"move.h"
+	"graphics.h"
+
+1742030290 c:\users\admin\onedrive\máy tính\ccc\hocthu3\graphics.h
+	<SDL_image.h>
+	<SDL.h>
+	"def.h"
+
+1742030952 c:\users\admin\onedrive\máy tính\ccc\hocthu3\def.h
+
+1741925729 source:c:\users\admin\onedrive\máy tính\ccc\hocthu3\gamemap.cpp
+
+1742184058 c:\users\admin\onedrive\máy tính\ccc\hocthu3\move.h
+	"graphics.h"
+
