@@ -2,6 +2,7 @@
 #define _DEFS__H
 const int SCREEN_WIDTH = 1920;
 const int SCREEN_HEIGHT = 1024;
+
 const char* WINDOW_TITLE = "Dark Castle Expedition";
 //map
 #define TILE_Size 64

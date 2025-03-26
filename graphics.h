@@ -6,7 +6,7 @@
 struct Graphics {
     SDL_Renderer *renderer;
     SDL_Window *window;
-    SDL_Texture*character;
+    SDL_Texture* characterFrames[5];
     void logErrorAndExit(const char* msg, const char* error)
     {
         SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR,
@@ -82,5 +82,14 @@ struct Graphics {
         SDL_DestroyWindow(window);
         SDL_Quit();
     }
+    void loadframes(){
+        characterFrames[0]=loadTexture("img/manmanman.png");
+        characterFrames[1]=loadTexture("img/manphai1.png");
+        characterFrames[2]=loadTexture("img/manphai2.png");
+        characterFrames[3]=loadTexture("img/mantrai1.png");
+        characterFrames[4]=loadTexture("img/mantrai2.png");
+
+    }
 };
+
 #endif

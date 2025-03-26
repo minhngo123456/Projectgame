@@ -32,11 +32,14 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="Enemy.h" />
+		<Unit filename="bullet.h" />
 		<Unit filename="def.h" />
 		<Unit filename="gamemap.cpp" />
 		<Unit filename="graphics.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="move.h" />
+		<Unit filename="sprite.h" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

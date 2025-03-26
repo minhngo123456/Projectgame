@@ -2,6 +2,17 @@
 #include <SDL.h>
 #include<SDL_image.h>
 #include"move.h"
+#include <vector>
+#include "bullet.h"
+#include"Enemy.h"
+#include<bits/stdc++.h>
+
+std::vector<Bullet> bullets;
+std::vector<Enemy> enemies;
+Uint32 lastSpawnTime=0;
+
+
+
 #include"graphics.h"
 using namespace std;
 
@@ -21,11 +32,12 @@ int main(int argc, char *argv[])
 {
     Graphics graphics;
     graphics.init();
-    graphics.character= graphics.loadTexture("img\\Sprite2.png");
+    graphics.loadframes();
     SDL_Texture * background = graphics.loadTexture("img\\background.jpg");
     SDL_Texture * gameover = graphics.loadTexture("img\\gameover.jpg");
     SDL_Texture*HP=graphics.loadTexture("img\\hp1.png");
     SDL_Texture*MN=graphics.loadTexture("img\\mn6.png");
+    SDL_Texture*EM=graphics.loadTexture("img\\enemy1.png");
 
     Move mouse;
     mouse.x = 0;
@@ -38,26 +50,59 @@ int main(int argc, char *argv[])
     graphics.renderTexture(HP,0,0);
     graphics.renderTexture(MN,-7,84);
 
+        for (auto &bullet : bullets) {
+            bullet.move();
+           }
+
+
+    for (const auto &bullet : bullets) {
+    SDL_Rect bulletRect = {bullet.x, bullet.y, 60, 5};
+    SDL_SetRenderDrawColor(graphics.renderer, 255, 255, 0, 255);
+    SDL_RenderFillRect(graphics.renderer, &bulletRect);
+    }
+    Uint32 currentTime=SDL_GetTicks();
+    if(currentTime>lastSpawnTime+20000){
+        enemies.push_back(Enemy(SCREEN_WIDTH,530,3));
+        lastSpawnTime=currentTime;
+    }
+    for(auto &enemy:enemies){
+        enemy.move();
+        graphics.renderTexture(EM,enemy.x,enemy.y);
+    }
+    enemies.erase(std::remove_if(enemies.begin(), enemies.end(),
+    [](const Enemy &e) { return !e.active; }), enemies.end());
 
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) quit = true;
+                if (event.type == SDL_QUIT) quit = true;
+                if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+                int bulletX = mouse.x + (mouse.facingRight ? 90 : -10);
+                int bulletY = mouse.y + 90;
+                int bulletDir = (mouse.facingRight ? 1 : -1);
+
+    bullets.push_back(Bullet(bulletX, bulletY, bulletDir));
+}
+
         }
 
         const Uint8* currentKeyStates = SDL_GetKeyboardState(NULL);
+        bool moving=false;
 
+        if (currentKeyStates[SDL_SCANCODE_LEFT]||currentKeyStates[SDL_SCANCODE_A]) {mouse.quatrai();moving=true;}
 
-        if (currentKeyStates[SDL_SCANCODE_LEFT]) {mouse.quatrai();}
+        else if (currentKeyStates[SDL_SCANCODE_RIGHT]||currentKeyStates[SDL_SCANCODE_D]) {mouse.quaphai();moving=false;}
 
-        else if (currentKeyStates[SDL_SCANCODE_RIGHT]) {mouse.quaphai();}
+         else if(currentKeyStates[SDL_KEYUP]) {mouse.stop(); }
 
-         else if(currentKeyStates[SDL_KEYUP]) {mouse.stop(); mouse.y=730;}
 
 
 
         mouse.move();
 
-        render(mouse, graphics);
 
+
+        render(mouse, graphics);
+        bullets.erase(std::remove_if(bullets.begin(), bullets.end(),
+    [](const Bullet &b) { return !b.active; }), bullets.end());
         graphics.presentScene();
         SDL_Delay(10);
     }
