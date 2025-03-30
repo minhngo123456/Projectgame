@@ -6,14 +6,10 @@
 #include "bullet.h"
 #include"Enemy.h"
 #include<bits/stdc++.h>
-
+#include"graphics.h"
 std::vector<Bullet> bullets;
 std::vector<Enemy> enemies;
 Uint32 lastSpawnTime=0;
-
-
-
-#include"graphics.h"
 using namespace std;
 
 void waitUntilKeyPressed()
@@ -61,7 +57,7 @@ int main(int argc, char *argv[])
     SDL_RenderFillRect(graphics.renderer, &bulletRect);
     }
     Uint32 currentTime=SDL_GetTicks();
-    if(currentTime>lastSpawnTime+20000){
+    if(currentTime>lastSpawnTime+5000){
         enemies.push_back(Enemy(SCREEN_WIDTH,530,3));
         lastSpawnTime=currentTime;
     }
@@ -69,6 +65,17 @@ int main(int argc, char *argv[])
         enemy.move();
         graphics.renderTexture(EM,enemy.x,enemy.y);
     }
+    for (auto &bullet : bullets) {
+            SDL_Rect bulletRect = {bullet.x, bullet.y, 60, 5};
+            for (auto &enemy : enemies) {
+                SDL_Rect enemyRect = {enemy.x, enemy.y, 500, 500};
+                if (SDL_HasIntersection(&bulletRect, &enemyRect)) {
+                    enemy.takeDamage(1);
+                    bullet.active = false;
+                }
+            }
+        }
+
     enemies.erase(std::remove_if(enemies.begin(), enemies.end(),
     [](const Enemy &e) { return !e.active; }), enemies.end());
 

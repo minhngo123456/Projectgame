@@ -19,6 +19,12 @@ struct Enemy{
     active=false;
    }
    }
+   void takeDamage(int damage){
+       blood-=damage;
+       if(blood<=0){
+        active=false;
+       }
+   }
 
 };
 #endif // _ENEMY__H_

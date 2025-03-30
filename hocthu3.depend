@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1743004382 source:c:\users\admin\onedrive\máy tính\ccc\hocthu3\main.cpp
+1743057219 source:c:\users\admin\onedrive\máy tính\ccc\hocthu3\main.cpp
 	<iostream>
 	<SDL.h>
 	<SDL_image.h>
@@ -25,6 +25,4 @@
 1742919244 c:\users\admin\onedrive\máy tính\ccc\hocthu3\bullet.h
 
 1743003870 c:\users\admin\onedrive\máy tính\ccc\hocthu3\enemy.h
-
-1741925729 source:c:\users\admin\onedrive\máy tính\projectgame\gamemap.cpp
 
