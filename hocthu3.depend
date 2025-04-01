@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1743057219 source:c:\users\admin\onedrive\máy tính\ccc\hocthu3\main.cpp
+1743503656 source:c:\users\admin\onedrive\máy tính\ccc\hocthu3\main.cpp
 	<iostream>
 	<SDL.h>
 	<SDL_image.h>
@@ -10,7 +10,7 @@
 	<bits/stdc++.h>
 	"graphics.h"
 
-1742965179 c:\users\admin\onedrive\máy tính\ccc\hocthu3\graphics.h
+1743503679 c:\users\admin\onedrive\máy tính\ccc\hocthu3\graphics.h
 	<SDL_image.h>
 	<SDL.h>
 	"def.h"
@@ -19,10 +19,68 @@
 
 1741925729 source:c:\users\admin\onedrive\máy tính\ccc\hocthu3\gamemap.cpp
 
-1742965179 c:\users\admin\onedrive\máy tính\ccc\hocthu3\move.h
+1743501769 c:\users\admin\onedrive\máy tính\ccc\hocthu3\move.h
 	"graphics.h"
 
 1742919244 c:\users\admin\onedrive\máy tính\ccc\hocthu3\bullet.h
 
-1743003870 c:\users\admin\onedrive\máy tính\ccc\hocthu3\enemy.h
+1743351992 c:\users\admin\onedrive\máy tính\ccc\hocthu3\enemy.h
+
+1741925729 source:c:\users\admin\onedrive\máy tính\ccc\hocthu1\gamemap.cpp
+
+1743517316 source:c:\users\admin\onedrive\máy tính\ccc\hocthu1\main.cpp
+	<iostream>
+	<SDL.h>
+	<SDL_image.h>
+	"move.h"
+	<vector>
+	"bullet.h"
+	"Enemy.h"
+	<bits/stdc++.h>
+	"graphics.h"
+	<SDL_ttf.h>
+
+1743501769 c:\users\admin\onedrive\máy tính\ccc\hocthu1\move.h
+	"graphics.h"
+
+1743505827 c:\users\admin\onedrive\máy tính\ccc\hocthu1\graphics.h
+	<SDL_image.h>
+	<SDL.h>
+	<SDL_ttf.h>
+	"def.h"
+
+1742706966 c:\users\admin\onedrive\máy tính\ccc\hocthu1\def.h
+
+1743516889 c:\users\admin\onedrive\máy tính\ccc\hocthu1\bullet.h
+
+1743351992 c:\users\admin\onedrive\máy tính\ccc\hocthu1\enemy.h
+
+1741925729 source:c:\users\admin\onedrive\máy tính\projectgame\gamemap.cpp
+
+1743517316 source:c:\users\admin\onedrive\máy tính\projectgame\main.cpp
+	<iostream>
+	<SDL.h>
+	<SDL_image.h>
+	"move.h"
+	<vector>
+	"bullet.h"
+	"Enemy.h"
+	<bits/stdc++.h>
+	"graphics.h"
+	<SDL_ttf.h>
+
+1743501769 c:\users\admin\onedrive\máy tính\projectgame\move.h
+	"graphics.h"
+
+1743505827 c:\users\admin\onedrive\máy tính\projectgame\graphics.h
+	<SDL_image.h>
+	<SDL.h>
+	<SDL_ttf.h>
+	"def.h"
+
+1742706966 c:\users\admin\onedrive\máy tính\projectgame\def.h
+
+1743516889 c:\users\admin\onedrive\máy tính\projectgame\bullet.h
+
+1743351992 c:\users\admin\onedrive\máy tính\projectgame\enemy.h
 

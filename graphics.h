@@ -2,6 +2,7 @@
 #define _GRAPHICS__H
 #include<SDL_image.h>
 #include<SDL.h>
+#include<SDL_ttf.h>
 #include"def.h"
 struct Graphics {
     SDL_Renderer *renderer;
@@ -15,6 +16,11 @@ struct Graphics {
     }
 
     void init() {
+        if (TTF_Init() == -1) {
+            logErrorAndExit("SDL_ttf could not initialize! SDL_ttf Error: ",
+                             TTF_GetError());
+        }
+
         if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
             logErrorAndExit("SDL_Init", SDL_GetError());
 
@@ -77,6 +83,7 @@ struct Graphics {
     void quit()
     {
         IMG_Quit();
+         TTF_Quit();
 
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
@@ -89,6 +96,61 @@ struct Graphics {
         characterFrames[3]=loadTexture("img/mantrai1.png");
         characterFrames[4]=loadTexture("img/mantrai2.png");
 
+    }
+    void renderHealthBar(SDL_Renderer* renderer, int hp, int maxHP, int x, int y) {
+    int barWidth = 250;
+    int barHeight =35;
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_Rect bgRect = {x, y, barWidth, barHeight};
+    SDL_RenderFillRect(renderer, &bgRect);
+
+    int hpWidth = (hp * barWidth) / maxHP;
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_Rect hpRect = {x, y, hpWidth, barHeight};
+    SDL_RenderFillRect(renderer, &hpRect);
+
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderDrawRect(renderer, &bgRect);
+}
+    void renderManaBar(SDL_Renderer* renderer, int mn, int maxMN, int x, int y) {
+    int barWidth = 250;
+    int barHeight =35;
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_Rect bgRect = {x, y, barWidth, barHeight};
+    SDL_RenderFillRect(renderer, &bgRect);
+
+    int mnWidth = (mn * barWidth) / maxMN;
+    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+    SDL_Rect mnRect = {x, y, mnWidth, barHeight};
+    SDL_RenderFillRect(renderer, &mnRect);
+
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderDrawRect(renderer, &bgRect);
+}
+TTF_Font* loadFont(const char* path, int size)
+    {
+        TTF_Font* gFont = TTF_OpenFont( path, size );
+        if (gFont == nullptr) {
+            SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR, "Load font %s", TTF_GetError());
+        }
+    }
+SDL_Texture* renderText(const char* text, TTF_Font* font, SDL_Color textColor)
+    {
+        SDL_Surface* textSurface = TTF_RenderText_Solid( font, text, textColor );
+        if( textSurface == nullptr ) {
+            SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR, "Render text surface %s", TTF_GetError());
+            return nullptr;
+        }
+
+        SDL_Texture* texture = SDL_CreateTextureFromSurface( renderer, textSurface );
+        if( texture == nullptr ) {
+            SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR, "Create texture from text %s", SDL_GetError());
+        }
+
+        SDL_FreeSurface( textSurface );
+        return texture;
     }
 };
 

@@ -7,6 +7,8 @@ enum characterstate{IDLE,RUNNING_LEFT,RUNNING_RIGHT};
 struct Move{
    int x,y;
    int dx=0,dy=0;
+   int playerHP=5;
+   int playerMN=0;
    int speed =INITIAL_SPEED;
    int frame=0;
    int framecount=2;
@@ -46,7 +48,23 @@ struct Move{
    dx=0;dy=0;
    state=IDLE;
    }
+   bool invincible = false;
+   Uint32 invincibleStart = 0;
 
+   void takeDamage(int damage) {
+    Uint32 currentTime = SDL_GetTicks();
+    if (!invincible) {
+        playerHP -= damage;
+        if (playerHP < 0) playerHP = 0;
+
+        invincible = true;
+        invincibleStart = currentTime;
+    }
+
+    if (currentTime - invincibleStart > 2000) {
+        invincible = false;
+    }
+}
 
    };
    void render(const Move &mouse,const Graphics &graphics){
