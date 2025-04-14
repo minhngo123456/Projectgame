@@ -15,6 +15,7 @@ Uint32 lastSpawnTime=0;
 Uint32 displayTime=0;
 bool hasDisplayedText=false;
 using namespace std;
+
 bool checkCollision(const Move &mouse, const Enemy &enemy) {
     SDL_Rect playerRect = {mouse.x, mouse.y, 256, 256};
     SDL_Rect enemyRect = {enemy.x, enemy.y, 500, 500};
@@ -36,9 +37,15 @@ void waitUntilKeyPressed()
 
 int main(int argc, char *argv[])
 {
+    enum GameState {
+    MENU,
+    PLAYING,
+    EXIT
+    };
     Graphics graphics;
     graphics.init();
     graphics.loadframes();
+    SDL_Texture * menu = graphics.loadTexture("img\\menu.jpg");
     SDL_Texture * background = graphics.loadTexture("img\\background.jpg");
     SDL_Texture * gameover = graphics.loadTexture("img\\gameover.jpg");
     SDL_Texture*EM=graphics.loadTexture("img\\enemy1.png");
@@ -47,14 +54,35 @@ int main(int argc, char *argv[])
     SDL_Color color = {255, 255, 0, 0};
     SDL_Texture* helloText = graphics.renderText("Ready for until, press X!", font, color);
 
-
     Move mouse;
     mouse.x = 0;
     mouse.y = 730;
-
+    GameState gameState=MENU;
     bool quit = false;
     SDL_Event event;
     while (!quit && !gameOver(mouse)) {
+            if(gameState==MENU){
+                graphics.renderMenu(graphics,menu,font);
+                while(SDL_PollEvent(&event)){
+                    if(event.type==SDL_QUIT){
+                        quit=true;
+                    }
+                    else if(event.type==SDL_KEYDOWN){
+                        if(event.key.keysym.sym==SDLK_s){
+                            gameState=PLAYING;
+                        }
+                        else if(event.key.keysym.sym==SDLK_q){
+                            quit=true;
+                        }
+                    }
+                }
+            }
+            else if(gameState==PLAYING){
+
+
+
+
+
     graphics.prepareScene(background);
 
 
@@ -97,6 +125,7 @@ int main(int argc, char *argv[])
         enemy.move();
         if(checkCollision(mouse,enemy)){
             mouse.takeDamage(1);
+
             if(mouse.playerHP==0){
             quit=true;
          }
@@ -196,11 +225,11 @@ int main(int argc, char *argv[])
         bullets.erase(std::remove_if(bullets.begin(), bullets.end(),
     [](const Bullet &b) { return !b.active; }), bullets.end());
 
-bullets2.erase(std::remove_if(bullets2.begin(), bullets2.end(),
+    bullets2.erase(std::remove_if(bullets2.begin(), bullets2.end(),
     [](const Bullet &b) { return !b.active; }), bullets2.end());
         graphics.presentScene();
         SDL_Delay(10);
-    }
+    }}
 
     graphics.prepareScene(gameover);
     graphics.presentScene();

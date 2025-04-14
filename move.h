@@ -55,6 +55,7 @@ struct Move{
     Uint32 currentTime = SDL_GetTicks();
     if (!invincible) {
         playerHP -= damage;
+        playerMN++;
         if (playerHP < 0) playerHP = 0;
 
         invincible = true;
