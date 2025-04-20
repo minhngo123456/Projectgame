@@ -28,7 +28,7 @@
 
 1741925729 source:c:\users\admin\onedrive\máy tính\ccc\hocthu1\gamemap.cpp
 
-1744646191 source:c:\users\admin\onedrive\máy tính\ccc\hocthu1\main.cpp
+1745182203 source:c:\users\admin\onedrive\máy tính\ccc\hocthu1\main.cpp
 	<iostream>
 	<SDL.h>
 	<SDL_image.h>
@@ -43,46 +43,19 @@
 1743733455 c:\users\admin\onedrive\máy tính\ccc\hocthu1\move.h
 	"graphics.h"
 
-1744645640 c:\users\admin\onedrive\máy tính\ccc\hocthu1\graphics.h
+1745163771 c:\users\admin\onedrive\máy tính\ccc\hocthu1\graphics.h
 	<SDL_image.h>
 	<SDL.h>
 	<SDL_ttf.h>
+	"button.h"
+
+1745036417 c:\users\admin\onedrive\máy tính\ccc\hocthu1\def.h
+
+1745174822 c:\users\admin\onedrive\máy tính\ccc\hocthu1\bullet.h
+
+1745181255 c:\users\admin\onedrive\máy tính\ccc\hocthu1\enemy.h
+	"move.h"
+
+1745163778 c:\users\admin\onedrive\máy tính\ccc\hocthu1\button.h
 	"def.h"
-
-1742706966 c:\users\admin\onedrive\máy tính\ccc\hocthu1\def.h
-
-1743516889 c:\users\admin\onedrive\máy tính\ccc\hocthu1\bullet.h
-
-1743734684 c:\users\admin\onedrive\máy tính\ccc\hocthu1\enemy.h
-	"move.h"
-
-1741925729 source:c:\users\admin\onedrive\máy tính\projectgame\gamemap.cpp
-
-1744646191 source:c:\users\admin\onedrive\máy tính\projectgame\main.cpp
-	<iostream>
-	<SDL.h>
-	<SDL_image.h>
-	"move.h"
-	<vector>
-	"bullet.h"
-	"Enemy.h"
-	<bits/stdc++.h>
-	"graphics.h"
-	<SDL_ttf.h>
-
-1743733455 c:\users\admin\onedrive\máy tính\projectgame\move.h
-	"graphics.h"
-
-1744645640 c:\users\admin\onedrive\máy tính\projectgame\graphics.h
-	<SDL_image.h>
-	<SDL.h>
-	<SDL_ttf.h>
-	"def.h"
-
-1742706966 c:\users\admin\onedrive\máy tính\projectgame\def.h
-
-1743516889 c:\users\admin\onedrive\máy tính\projectgame\bullet.h
-
-1743734684 c:\users\admin\onedrive\máy tính\projectgame\enemy.h
-	"move.h"
 

@@ -34,6 +34,7 @@
 		</Compiler>
 		<Unit filename="Enemy.h" />
 		<Unit filename="bullet.h" />
+		<Unit filename="button.h" />
 		<Unit filename="def.h" />
 		<Unit filename="gamemap.cpp" />
 		<Unit filename="graphics.h" />

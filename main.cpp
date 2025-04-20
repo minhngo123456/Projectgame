@@ -42,10 +42,11 @@ int main(int argc, char *argv[])
     PLAYING,
     EXIT
     };
+
     Graphics graphics;
     graphics.init();
     graphics.loadframes();
-    SDL_Texture * menu = graphics.loadTexture("img\\menu.jpg");
+    SDL_Texture * menu = graphics.loadTexture("img\\menu.png");
     SDL_Texture * background = graphics.loadTexture("img\\background.jpg");
     SDL_Texture * gameover = graphics.loadTexture("img\\gameover.jpg");
     SDL_Texture*EM=graphics.loadTexture("img\\enemy1.png");
@@ -53,6 +54,19 @@ int main(int argc, char *argv[])
 
     SDL_Color color = {255, 255, 0, 0};
     SDL_Texture* helloText = graphics.renderText("Ready for until, press X!", font, color);
+    Button startButton(SCREEN_WIDTH/2 - BUTTON_WIDTH/2, 400);
+    startButton.normalTexture = graphics.renderText("Start Game", font, {255, 255, 255, 255});
+    startButton.hoverTexture = graphics.renderText("Start Game", font, {255, 215, 0, 255});
+
+    Button quitButton(SCREEN_WIDTH/2 - BUTTON_WIDTH/2, 500);
+    quitButton.normalTexture = graphics.renderText("Quit", font, {255, 255, 255, 255});
+    quitButton.hoverTexture = graphics.renderText("Quit", font, {255, 215, 0, 255});
+
+    Button restartButton(SCREEN_WIDTH/2 - BUTTON_WIDTH/2, 400);
+    restartButton.normalTexture = graphics.renderText("Restart", font, {255, 255, 255, 255});
+    restartButton.hoverTexture = graphics.renderText("Restart", font, {255, 215, 0, 255});
+    int currentWave = 1;
+    Uint32 waveStartTime = SDL_GetTicks();
 
     Move mouse;
     mouse.x = 0;
@@ -62,21 +76,27 @@ int main(int argc, char *argv[])
     SDL_Event event;
     while (!quit && !gameOver(mouse)) {
             if(gameState==MENU){
-                graphics.renderMenu(graphics,menu,font);
-                while(SDL_PollEvent(&event)){
-                    if(event.type==SDL_QUIT){
-                        quit=true;
-                    }
-                    else if(event.type==SDL_KEYDOWN){
-                        if(event.key.keysym.sym==SDLK_s){
-                            gameState=PLAYING;
-                        }
-                        else if(event.key.keysym.sym==SDLK_q){
-                            quit=true;
-                        }
-                    }
+            while(SDL_PollEvent(&event)){
+                if(event.type==SDL_QUIT){
+                    quit=true;
+                }
+                int mouseX, mouseY;
+                SDL_GetMouseState(&mouseX, &mouseY);
+                startButton.checkHover(mouseX, mouseY);
+                quitButton.checkHover(mouseX, mouseY);
+                if(startButton.handleEvent(&event)){
+                    gameState=PLAYING;
+                }
+                if(quitButton.handleEvent(&event)){
+                    quit = true;
                 }
             }
+            graphics.prepareScene(menu);
+            startButton.render(graphics.renderer);
+            quitButton.render(graphics.renderer);
+            graphics.presentScene();
+            }
+
             else if(gameState==PLAYING){
 
 
@@ -116,15 +136,52 @@ int main(int argc, char *argv[])
     SDL_SetRenderDrawColor(graphics.renderer, 255, 255, 255, 255);
     SDL_RenderFillRect(graphics.renderer, &bulletRect);
     }
+    // Hiển thị số lượt hiện tại
+
+
+
     Uint32 currentTime=SDL_GetTicks();
+
     if(currentTime>lastSpawnTime+5000){
-        enemies.push_back(Enemy(SCREEN_WIDTH,530,4));
-        lastSpawnTime=currentTime;
+            int enemiesToSpawn = 3 + currentWave;
+
+                for (int i = 0; i < enemiesToSpawn; i++) {
+
+                    enemies.push_back(Enemy(SCREEN_WIDTH, 530,
+                                         4 + currentWave,
+                                         2 + (currentWave / 3)));
+                }
+                lastSpawnTime = currentTime;
+
     }
+    if (currentTime - waveStartTime > 30000) { // 30 giây/wave
+                currentWave++;
+                waveStartTime = currentTime;
+
+                // Spawn boss mỗi 5 wave
+                if (currentWave % 5 == 0) {
+                    enemies.push_back(Enemy(SCREEN_WIDTH, 530, 20, 1));
+                }
+
+                // Hiển thị thông báo wave
+                SDL_Color waveColor = {255, 215, 0, 255};
+                SDL_Texture* waveText = graphics.renderText(
+                    ("WAVE " + std::to_string(currentWave)).c_str(),
+                    font,
+                    waveColor
+                );
+                graphics.renderTexture(waveText, SCREEN_WIDTH/2 - 100, 100);
+                SDL_DestroyTexture(waveText);
+            }
+
+
     for(auto &enemy:enemies){
         enemy.move();
         if(checkCollision(mouse,enemy)){
             mouse.takeDamage(1);
+            if(mouse.playerMN>=5){
+                mouse.playerMN=5;
+            }
 
             if(mouse.playerHP==0){
             quit=true;
@@ -132,7 +189,7 @@ int main(int argc, char *argv[])
             }
 
         graphics.renderTexture(EM,enemy.x,enemy.y);
-        SDL_Rect healthBarBg = {enemy.x+250, enemy.y-10 , 50, 5};
+        SDL_Rect healthBarBg = {enemy.x+250, enemy.y-10 , ((4+currentWave)*50)/4, 5};
         SDL_SetRenderDrawColor(graphics.renderer, 255, 0, 0, 255);
         SDL_RenderFillRect(graphics.renderer, &healthBarBg);
 
@@ -152,17 +209,23 @@ int main(int argc, char *argv[])
 }
     for (auto &bullet : bullets) {
             SDL_Rect bulletRect = {bullet.x, bullet.y, 60, 5};
+            bool bulletHit = false;
             for (auto &enemy : enemies) {
                 SDL_Rect enemyRect = {enemy.x, enemy.y, 500, 500};
                 if (SDL_HasIntersection(&bulletRect, &enemyRect)) {
                     enemy.takeDamage(1);
-                    mouse.playerMN+=1;
-                    if(mouse.playerMN>=5){
-                        mouse.playerMN=5;
-                    }
-                    bullet.active = false;
+                    if (bullet.level == 1 && !bullet.hasGivenMana) {
+                    mouse.playerMN = std::min(mouse.playerMN + 1, 5);
+                    bullet.hasGivenMana = true; // Đánh dấu đã tăng mana
+            }
+
+            bulletHit = true; // Đánh dấu đã trúng
+            bullet.active = false; // Hủy đạn ngay
+             // Thoát vòng lặp enemy
+
                 }
             }
+            if (bulletHit) break;
         }
 
     enemies.erase(std::remove_if(enemies.begin(), enemies.end(),
@@ -222,6 +285,14 @@ int main(int argc, char *argv[])
         render(mouse,graphics);
         graphics.renderHealthBar(graphics.renderer,mouse.playerHP,5,0,10);
         graphics.renderManaBar(graphics.renderer,mouse.playerMN,5,0,50);
+        SDL_Color infoColor = {255, 255, 255, 255};
+            SDL_Texture* waveInfo = graphics.renderText(
+                ("Wave: " + std::to_string(currentWave)).c_str(),
+                font,
+                infoColor
+            );
+            graphics.renderTexture(waveInfo, 1800, 10);
+            SDL_DestroyTexture(waveInfo);
         bullets.erase(std::remove_if(bullets.begin(), bullets.end(),
     [](const Bullet &b) { return !b.active; }), bullets.end());
 
@@ -230,10 +301,71 @@ int main(int argc, char *argv[])
         graphics.presentScene();
         SDL_Delay(10);
     }}
+bool inGameOver = true;
+Uint32 gameOverTime = SDL_GetTicks();
 
+while (inGameOver && !quit) {
+    Uint32 currentTime = SDL_GetTicks();
+    float fade = std::min(1.0f, (currentTime - gameOverTime) / 1000.0f);
+
+    // Xử lý sự kiện
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            quit = true;
+            inGameOver = false;
+        }
+
+        int mouseX, mouseY;
+        SDL_GetMouseState(&mouseX, &mouseY);
+
+        // Cập nhật trạng thái hover
+        restartButton.checkHover(mouseX, mouseY);
+        quitButton.checkHover(mouseX, mouseY);
+
+        // Xử lý click chuột
+        if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+            if (restartButton.isHovered) {
+                // Reset toàn bộ game
+                currentWave = 1;
+                waveStartTime = SDL_GetTicks();
+                mouse = Move(); // Reset player
+                enemies.clear();
+                bullets.clear();
+                bullets2.clear();
+                gameState = PLAYING;
+                inGameOver = false;
+                cout << "Game restarted!" << endl;
+            }
+            else if (quitButton.isHovered) {
+                quit = true;
+                inGameOver = false;
+            }
+        }
+    }
+
+    // Render
     graphics.prepareScene(gameover);
+
+    // Hiệu ứng fade
+    SDL_SetTextureAlphaMod(gameover, (Uint8)(fade * 255));
+
+    // Render nút
+    restartButton.render(graphics.renderer);
+    quitButton.render(graphics.renderer);
+
+    // Hiển thị thông tin wave
+    SDL_Color textColor = {255, 255, 255, (Uint8)(fade * 255)};
+    SDL_Texture* waveText = graphics.renderText(
+        ("Reached Wave: " + std::to_string(currentWave)).c_str(),
+        font,
+        textColor
+    );
+    graphics.renderTexture(waveText, SCREEN_WIDTH/2 - 150, 300);
+    SDL_DestroyTexture(waveText);
+
     graphics.presentScene();
-    waitUntilKeyPressed();
+    SDL_Delay(10);
+}
     SDL_DestroyTexture( background );
     background = NULL;
     SDL_DestroyTexture(gameover);
@@ -242,3 +374,4 @@ int main(int argc, char *argv[])
     return 0;
 
 }
+

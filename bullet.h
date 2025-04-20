@@ -6,6 +6,7 @@
     bool active;
     int direction;
     int level;
+    bool hasGivenMana;
     Bullet(int stX,int stY,int dir,int lvl=1){
     x=stX;
     y=stY;
@@ -13,6 +14,7 @@
     active = true;
     direction = dir;
     level=lvl;
+    hasGivenMana=false;
     }
     void move(){
     x+=speed * direction;

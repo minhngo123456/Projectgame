@@ -3,11 +3,18 @@
 #include<SDL_image.h>
 #include<SDL.h>
 #include<SDL_ttf.h>
-#include"def.h"
+
+#include"button.h"
 struct Graphics {
     SDL_Renderer *renderer;
     SDL_Window *window;
     SDL_Texture* characterFrames[5];
+    enum GameState {
+    MENU,
+    PLAYING,
+    EXIT
+    };
+    GameState gameState=MENU;
     void logErrorAndExit(const char* msg, const char* error)
     {
         SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR,
@@ -135,6 +142,7 @@ TTF_Font* loadFont(const char* path, int size)
         if (gFont == nullptr) {
             SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR, "Load font %s", TTF_GetError());
         }
+        return gFont;
     }
 SDL_Texture* renderText(const char* text, TTF_Font* font, SDL_Color textColor)
     {
@@ -152,19 +160,7 @@ SDL_Texture* renderText(const char* text, TTF_Font* font, SDL_Color textColor)
         SDL_FreeSurface( textSurface );
         return texture;
     }
-    void renderMenu(Graphics& graphics, SDL_Texture* background, TTF_Font* font) {
-    SDL_Color white = {255, 255, 255, 255};
-    SDL_Texture* startText = graphics.renderText("Press [S] to Start Game", font, white);
-    SDL_Texture* quitText = graphics.renderText("Press [Q] to Quit", font, white);
 
-    graphics.prepareScene(background);
-    graphics.renderTexture(startText, 100, 300);
-    graphics.renderTexture(quitText, 100, 400);
-    graphics.presentScene();
-
-    SDL_DestroyTexture(startText);
-    SDL_DestroyTexture(quitText);
-}
 };
 
 #endif
