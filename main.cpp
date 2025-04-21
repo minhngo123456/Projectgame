@@ -301,71 +301,9 @@ int main(int argc, char *argv[])
         graphics.presentScene();
         SDL_Delay(10);
     }}
-bool inGameOver = true;
-Uint32 gameOverTime = SDL_GetTicks();
-
-while (inGameOver && !quit) {
-    Uint32 currentTime = SDL_GetTicks();
-    float fade = std::min(1.0f, (currentTime - gameOverTime) / 1000.0f);
-
-    // Xử lý sự kiện
-    while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_QUIT) {
-            quit = true;
-            inGameOver = false;
-        }
-
-        int mouseX, mouseY;
-        SDL_GetMouseState(&mouseX, &mouseY);
-
-        // Cập nhật trạng thái hover
-        restartButton.checkHover(mouseX, mouseY);
-        quitButton.checkHover(mouseX, mouseY);
-
-        // Xử lý click chuột
-        if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
-            if (restartButton.isHovered) {
-                // Reset toàn bộ game
-                currentWave = 1;
-                waveStartTime = SDL_GetTicks();
-                mouse = Move(); // Reset player
-                enemies.clear();
-                bullets.clear();
-                bullets2.clear();
-                gameState = PLAYING;
-                inGameOver = false;
-                cout << "Game restarted!" << endl;
-            }
-            else if (quitButton.isHovered) {
-                quit = true;
-                inGameOver = false;
-            }
-        }
-    }
-
-    // Render
     graphics.prepareScene(gameover);
-
-    // Hiệu ứng fade
-    SDL_SetTextureAlphaMod(gameover, (Uint8)(fade * 255));
-
-    // Render nút
-    restartButton.render(graphics.renderer);
-    quitButton.render(graphics.renderer);
-
-    // Hiển thị thông tin wave
-    SDL_Color textColor = {255, 255, 255, (Uint8)(fade * 255)};
-    SDL_Texture* waveText = graphics.renderText(
-        ("Reached Wave: " + std::to_string(currentWave)).c_str(),
-        font,
-        textColor
-    );
-    graphics.renderTexture(waveText, SCREEN_WIDTH/2 - 150, 300);
-    SDL_DestroyTexture(waveText);
-
     graphics.presentScene();
-    SDL_Delay(10);
-}
+    waitUntilKeyPressed();
     SDL_DestroyTexture( background );
     background = NULL;
     SDL_DestroyTexture(gameover);
