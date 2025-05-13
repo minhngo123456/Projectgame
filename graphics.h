@@ -2,12 +2,19 @@
 #define _GRAPHICS__H
 #include<SDL_image.h>
 #include<SDL.h>
+#include <SDL_mixer.h>
 #include<SDL_ttf.h>
-
 #include"button.h"
 struct Graphics {
     SDL_Renderer *renderer;
     SDL_Window *window;
+    Mix_Music* backgroundMusic;
+    Mix_Chunk* menuHoverSound;
+    Mix_Chunk* menuSelectSound;
+    Mix_Music* menuOpenSound;
+    Mix_Chunk* shootSound;
+    Mix_Chunk* hitSound;
+    Mix_Chunk* enemyDieSound;
     SDL_Texture* characterFrames[5];
     enum GameState {
     MENU,
@@ -51,6 +58,11 @@ struct Graphics {
 
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
         SDL_RenderSetLogicalSize(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+        if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 ) {
+        logErrorAndExit( "SDL_mixer could not initialize! SDL_mixer Error: %s\n",
+                    Mix_GetError() );
+}
+          loadSounds();
     }
 
     void prepareScene(SDL_Texture * background)
@@ -90,7 +102,8 @@ struct Graphics {
     void quit()
     {
         IMG_Quit();
-         TTF_Quit();
+        TTF_Quit();
+        Mix_Quit();
 
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
@@ -160,6 +173,52 @@ SDL_Texture* renderText(const char* text, TTF_Font* font, SDL_Color textColor)
         SDL_FreeSurface( textSurface );
         return texture;
     }
+Mix_Music *loadMusic(const char* path)
+    {
+        Mix_Music *gMusic = Mix_LoadMUS(path);
+        if (gMusic == nullptr) {
+            SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION,
+                           SDL_LOG_PRIORITY_ERROR,
+                "Could not load music! SDL_mixer Error: %s", Mix_GetError());
+        }
+        return gMusic;
+    }
+    void play(Mix_Music *gMusic)
+    {
+        if (gMusic == nullptr) return;
+
+        if (Mix_PlayingMusic() == 0) {
+            Mix_PlayMusic( gMusic, -1 );
+        }
+        else if( Mix_PausedMusic() == 1 ) {
+            Mix_ResumeMusic();
+        }
+    }
+    Mix_Chunk* loadSound(const char* path) {
+    Mix_Chunk* sound = Mix_LoadWAV(path);
+    if (sound == nullptr) {
+        logErrorAndExit("Could not load sound effect! SDL_mixer Error: ", Mix_GetError());
+    }
+    return sound;
+}
+
+void loadSounds() {
+     backgroundMusic = loadMusic("bmusic.mp3");
+     menuHoverSound = loadSound("hsound.mp3");
+     menuSelectSound = loadSound("sltedsound.mp3");
+     menuOpenSound = loadMusic("osound.mp3");
+     shootSound = loadSound("bulletsound.mp3");
+     hitSound = loadSound("hitsound.mp3");
+     enemyDieSound = loadSound("enemyDieSound.mp3");
+
+}
+
+void playSound(Mix_Chunk* sound) {
+    if (sound != nullptr) {
+        Mix_PlayChannel(-1, sound, 0);
+    }
+}
+
 
 };
 

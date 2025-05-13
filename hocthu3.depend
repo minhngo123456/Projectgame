@@ -28,10 +28,11 @@
 
 1741925729 source:c:\users\admin\onedrive\máy tính\ccc\hocthu1\gamemap.cpp
 
-1745230159 source:c:\users\admin\onedrive\máy tính\ccc\hocthu1\main.cpp
+1747074269 source:c:\users\admin\onedrive\máy tính\ccc\hocthu1\main.cpp
 	<iostream>
 	<SDL.h>
 	<SDL_image.h>
+	<SDL_mixer.h>
 	"move.h"
 	<vector>
 	"bullet.h"
@@ -43,9 +44,10 @@
 1743733455 c:\users\admin\onedrive\máy tính\ccc\hocthu1\move.h
 	"graphics.h"
 
-1745163771 c:\users\admin\onedrive\máy tính\ccc\hocthu1\graphics.h
+1747076319 c:\users\admin\onedrive\máy tính\ccc\hocthu1\graphics.h
 	<SDL_image.h>
 	<SDL.h>
+	<SDL_mixer.h>
 	<SDL_ttf.h>
 	"button.h"
 
@@ -59,12 +61,13 @@
 1745163778 c:\users\admin\onedrive\máy tính\ccc\hocthu1\button.h
 	"def.h"
 
-1741925729 source:c:\users\admin\onedrive\máy tính\projectgame\gamemap.cpp
+1741925729 source:c:\new folder\gamemap.cpp
 
-1745230159 source:c:\users\admin\onedrive\máy tính\projectgame\main.cpp
+1747141964 source:c:\new folder\main.cpp
 	<iostream>
 	<SDL.h>
 	<SDL_image.h>
+	<SDL_mixer.h>
 	"move.h"
 	<vector>
 	"bullet.h"
@@ -73,22 +76,93 @@
 	"graphics.h"
 	<SDL_ttf.h>
 
-1743733455 c:\users\admin\onedrive\máy tính\projectgame\move.h
+1743733455 c:\new folder\move.h
 	"graphics.h"
 
-1745163771 c:\users\admin\onedrive\máy tính\projectgame\graphics.h
+1747126940 c:\new folder\graphics.h
 	<SDL_image.h>
 	<SDL.h>
+	<SDL_mixer.h>
 	<SDL_ttf.h>
 	"button.h"
 
-1745163778 c:\users\admin\onedrive\máy tính\projectgame\button.h
+1745163778 c:\new folder\button.h
 	"def.h"
 
-1745036417 c:\users\admin\onedrive\máy tính\projectgame\def.h
+1745036417 c:\new folder\def.h
+
+1745174822 c:\new folder\bullet.h
+
+1745181255 c:\new folder\enemy.h
+	"move.h"
+
+1741925729 source:c:\new folder (2)\gamemap.cpp
+
+1747150600 source:c:\new folder (2)\main.cpp
+	<iostream>
+	<SDL.h>
+	<SDL_image.h>
+	<SDL_mixer.h>
+	"move.h"
+	<vector>
+	"bullet.h"
+	"Enemy.h"
+	<bits/stdc++.h>
+	"graphics.h"
+	<SDL_ttf.h>
+
+1743733455 c:\new folder (2)\move.h
+	"graphics.h"
+
+1747148915 c:\new folder (2)\graphics.h
+	<SDL_image.h>
+	<SDL.h>
+	<SDL_mixer.h>
+	<SDL_ttf.h>
+	"button.h"
+
+1747148915 c:\new folder (2)\button.h
+	"def.h"
+
+1747148289 c:\new folder (2)\def.h
+
+1745174822 c:\new folder (2)\bullet.h
+
+1747152912 c:\new folder (2)\enemy.h
+	"move.h"
+
+1741925729 source:c:\users\admin\onedrive\máy tính\projectgame\gamemap.cpp
+
+1747156883 source:c:\users\admin\onedrive\máy tính\projectgame\main.cpp
+	<iostream>
+	<SDL.h>
+	<SDL_image.h>
+	<SDL_mixer.h>
+	"move.h"
+	<vector>
+	"bullet.h"
+	"Enemy.h"
+	<bits/stdc++.h>
+	"graphics.h"
+	<SDL_ttf.h>
+
+1747155934 c:\users\admin\onedrive\máy tính\projectgame\move.h
+	"graphics.h"
+
+1747148915 c:\users\admin\onedrive\máy tính\projectgame\graphics.h
+	<SDL_image.h>
+	<SDL.h>
+	<SDL_mixer.h>
+	<SDL_ttf.h>
+	"button.h"
+
+1747148915 c:\users\admin\onedrive\máy tính\projectgame\button.h
+	"def.h"
+
+1747148289 c:\users\admin\onedrive\máy tính\projectgame\def.h
 
 1745174822 c:\users\admin\onedrive\máy tính\projectgame\bullet.h
 
-1745181255 c:\users\admin\onedrive\máy tính\projectgame\enemy.h
+1747153533 c:\users\admin\onedrive\máy tính\projectgame\enemy.h
 	"move.h"
 

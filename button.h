@@ -6,8 +6,8 @@ struct Button{
      SDL_Texture* normalTexture;
      SDL_Texture* hoverTexture;
      bool isHovered;
-     Button(int x,int y){
-     rect={x,y,BUTTON_WIDTH,BUTTON_HEIGHT};
+     Button(int x,int y,int w,int h){
+     rect={x,y,w,h};
      isHovered=false;
      }
      bool checkHover(int mouseX, int mouseY){

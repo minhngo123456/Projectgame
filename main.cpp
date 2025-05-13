@@ -1,6 +1,7 @@
 #include <iostream>
 #include <SDL.h>
 #include<SDL_image.h>
+#include <SDL_mixer.h>
 #include"move.h"
 #include <vector>
 #include "bullet.h"
@@ -11,6 +12,7 @@
 std::vector<Bullet> bullets;
 std::vector<Enemy> enemies;
 std::vector<Bullet>bullets2;
+std::vector<Enemy*> deadEnemies;
 Uint32 lastSpawnTime=0;
 Uint32 displayTime=0;
 bool hasDisplayedText=false;
@@ -40,33 +42,58 @@ int main(int argc, char *argv[])
     enum GameState {
     MENU,
     PLAYING,
+    SETTINGS,
     EXIT
     };
-
+    bool restartGame = false;
     Graphics graphics;
     graphics.init();
     graphics.loadframes();
+    graphics.loadSounds();
     SDL_Texture * menu = graphics.loadTexture("img\\menu.png");
     SDL_Texture * background = graphics.loadTexture("img\\background.jpg");
     SDL_Texture * gameover = graphics.loadTexture("img\\gameover.jpg");
     SDL_Texture*EM=graphics.loadTexture("img\\enemy1.png");
     TTF_Font* font = graphics.loadFont("arial.ttf", 24);
+    TTF_Font* smallFont = graphics.loadFont("arial.ttf", 36);
+
 
     SDL_Color color = {255, 255, 0, 0};
-    SDL_Texture* helloText = graphics.renderText("Ready for until, press X!", font, color);
-    Button startButton(SCREEN_WIDTH/2 - BUTTON_WIDTH/2, 400);
-    startButton.normalTexture = graphics.renderText("Start Game", font, {255, 255, 255, 255});
-    startButton.hoverTexture = graphics.renderText("Start Game", font, {255, 215, 0, 255});
+    SDL_Texture* ultText = graphics.renderText("Ready for ulti, press X!", font, color);
 
-    Button quitButton(SCREEN_WIDTH/2 - BUTTON_WIDTH/2, 500);
-    quitButton.normalTexture = graphics.renderText("Quit", font, {255, 255, 255, 255});
-    quitButton.hoverTexture = graphics.renderText("Quit", font, {255, 215, 0, 255});
+    const int buttonYStart = 380;
+    const int buttonSpacing = 80;
 
-    Button restartButton(SCREEN_WIDTH/2 - BUTTON_WIDTH/2, 400);
-    restartButton.normalTexture = graphics.renderText("Restart", font, {255, 255, 255, 255});
-    restartButton.hoverTexture = graphics.renderText("Restart", font, {255, 215, 0, 255});
+    Button startButton(SCREEN_WIDTH/2 - BUTTON_WIDTH/2, 400,300,70);
+    startButton.normalTexture = graphics.renderText("Start Game", smallFont, {255, 255, 255, 255});
+    startButton.hoverTexture = graphics.renderText("Start Game", smallFont, {255, 215, 0, 255});
+
+    Button settingsButton(SCREEN_WIDTH/2 - BUTTON_WIDTH/2, 500,210,70);
+    settingsButton.normalTexture = graphics.renderText("Settings", smallFont, {255, 255, 255, 255});
+    settingsButton.hoverTexture = graphics.renderText("Settings", smallFont, {255, 215, 0, 255});
+
+    Button quitButton(SCREEN_WIDTH/2 - BUTTON_WIDTH/2, 600,100,70);
+    quitButton.normalTexture = graphics.renderText("Quit", smallFont, {255, 255, 255, 255});
+    quitButton.hoverTexture = graphics.renderText("Quit", smallFont, {255, 215, 0, 255});
+
+    Button backButton(+SCREEN_WIDTH/2 - BUTTON_WIDTH/2, buttonYStart + buttonSpacing * 2,120,70);
+    backButton.normalTexture = graphics.renderText("Back", smallFont, {255, 255, 255, 255});
+    backButton.hoverTexture = graphics.renderText("Back", smallFont, {255, 215, 0, 255});
+
+    Button restartButton(SCREEN_WIDTH/2 - BUTTON_WIDTH/2, 500, 250, 70);
+    restartButton.normalTexture = graphics.renderText("Restart", smallFont, {255, 255, 255, 255});
+    restartButton.hoverTexture = graphics.renderText("Restart", smallFont, {255, 215, 0, 255});
+
+    int volume = MIX_MAX_VOLUME; // âm lượng mặc định
+    int sliderX = 700;
+    int sliderY = 400;
+    int sliderWidth = 300;
+    int sliderHeight = 20;
+    bool draggingSlider = false;
+
     int currentWave = 1;
     Uint32 waveStartTime = SDL_GetTicks();
+
 
     Move mouse;
     mouse.x = 0;
@@ -74,28 +101,125 @@ int main(int argc, char *argv[])
     GameState gameState=MENU;
     bool quit = false;
     SDL_Event event;
+    do {
+    // RESET mọi thứ khi restart
+    mouse = Move();
+    bullets.clear();
+    bullets2.clear();
+    enemies.clear();
+    deadEnemies.clear();
+    currentWave = 1;
+    waveStartTime = SDL_GetTicks();
+    lastSpawnTime = 0;
+    hasDisplayedText = false;
+    restartGame = false;
     while (!quit && !gameOver(mouse)) {
+
             if(gameState==MENU){
+            if (!Mix_PlayingMusic()) {
+            Mix_PlayMusic(graphics.menuOpenSound, -1);
+            }
             while(SDL_PollEvent(&event)){
                 if(event.type==SDL_QUIT){
                     quit=true;
                 }
                 int mouseX, mouseY;
                 SDL_GetMouseState(&mouseX, &mouseY);
-                startButton.checkHover(mouseX, mouseY);
-                quitButton.checkHover(mouseX, mouseY);
+                  bool wasHovered = startButton.isHovered || quitButton.isHovered || settingsButton.isHovered;
+                  startButton.checkHover(mouseX, mouseY);
+                  quitButton.checkHover(mouseX, mouseY);
+                  settingsButton.checkHover(mouseX, mouseY);
+                  bool nowHovered = startButton.isHovered || quitButton.isHovered || settingsButton.isHovered;
+                   if (!wasHovered && nowHovered) {
+                         Mix_PlayChannel(-1, graphics.menuHoverSound, 0);
+                   }
                 if(startButton.handleEvent(&event)){
-                    gameState=PLAYING;
+                    Mix_PlayChannel(-1, graphics.menuSelectSound, 0);
+                    gameState = PLAYING;
+                    // Phát nhạc nền game khi bắt đầu chơi
+                    Mix_PlayMusic(graphics.backgroundMusic, -1);
                 }
+
+                if(settingsButton.handleEvent(&event)){
+                Mix_PlayChannel(-1, graphics.menuSelectSound, 0);
+                gameState = SETTINGS;
+                    }
                 if(quitButton.handleEvent(&event)){
+                    Mix_PlayChannel(-1, graphics.menuSelectSound, 0);
+                    SDL_Delay(300); // Đợi một chút để âm thanh phát xong
                     quit = true;
                 }
             }
+
             graphics.prepareScene(menu);
             startButton.render(graphics.renderer);
             quitButton.render(graphics.renderer);
+            settingsButton.render(graphics.renderer);
             graphics.presentScene();
             }
+            else if (gameState == SETTINGS) {
+    // Thiết lập vị trí và kích thước của slider (đặt ở giữa màn hình)
+    int sliderWidth = 600;
+    int sliderHeight = 40;
+    int sliderX = (SCREEN_WIDTH - sliderWidth) / 2;
+    int sliderY = (SCREEN_HEIGHT - sliderHeight) / 2;
+
+    while (SDL_PollEvent(&event)) {
+        // Xử lý kéo slider
+        int mouseX, mouseY;
+        SDL_GetMouseState(&mouseX, &mouseY);
+
+        backButton.checkHover(mouseX, mouseY);
+
+        if (event.type == SDL_MOUSEBUTTONDOWN) {
+            if (event.button.button == SDL_BUTTON_LEFT) {
+                if (mouseX >= sliderX && mouseX <= sliderX + sliderWidth &&
+                    mouseY >= sliderY && mouseY <= sliderY + sliderHeight) {
+                    draggingSlider = true;
+                }
+
+                if (backButton.handleEvent(&event)) {
+                    Mix_PlayChannel(-1, graphics.menuSelectSound, 0);
+                    gameState = MENU;
+                }
+            }
+        }
+
+        if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_LEFT) {
+            draggingSlider = false;
+        }
+
+        if (event.type == SDL_MOUSEMOTION && draggingSlider) {
+            int newX = mouseX;
+            newX = std::max(sliderX, std::min(sliderX + sliderWidth, newX));
+            volume = ((newX - sliderX) * MIX_MAX_VOLUME) / sliderWidth;
+            Mix_Volume(-1, volume);         // Âm lượng hiệu ứng
+            Mix_VolumeMusic(volume);        // Âm lượng nhạc nền
+        }
+    }
+
+    // Vẽ UI setting
+    graphics.prepareScene(menu); // hoặc background riêng cho setting nếu có
+
+    SDL_Color textColor = {255, 255, 0, 255};
+    SDL_Texture* settingsText = graphics.renderText("Sound", font, textColor);
+    graphics.renderTexture(settingsText, SCREEN_WIDTH / 2 - 60, sliderY - 100); // đặt tiêu đề phía trên slider
+    SDL_DestroyTexture(settingsText);
+
+    // Vẽ thanh nền slider
+    SDL_Rect sliderBg = {sliderX, sliderY, sliderWidth, sliderHeight};
+    SDL_SetRenderDrawColor(graphics.renderer, 100, 100, 100, 255);
+    SDL_RenderFillRect(graphics.renderer, &sliderBg);
+
+    // Vẽ phần đang kéo
+    int filledWidth = (volume * sliderWidth) / MIX_MAX_VOLUME;
+    SDL_Rect sliderFill = {sliderX, sliderY, filledWidth, sliderHeight};
+    SDL_SetRenderDrawColor(graphics.renderer, 0, 255, 0, 255);
+    SDL_RenderFillRect(graphics.renderer, &sliderFill);
+
+    backButton.render(graphics.renderer);
+    graphics.presentScene();
+}
 
             else if(gameState==PLAYING){
 
@@ -204,6 +328,7 @@ int main(int argc, char *argv[])
         if (SDL_HasIntersection(&bulletRect, &enemyRect)) {
             enemy.takeDamage(5);
             bullet.active = false;
+
         }
     }
 }
@@ -214,11 +339,14 @@ int main(int argc, char *argv[])
                 SDL_Rect enemyRect = {enemy.x, enemy.y, 500, 500};
                 if (SDL_HasIntersection(&bulletRect, &enemyRect)) {
                     enemy.takeDamage(1);
+                    Mix_PlayChannel(-1, graphics.hitSound, 0);
                     if (bullet.level == 1 && !bullet.hasGivenMana) {
                     mouse.playerMN = std::min(mouse.playerMN + 1, 5);
                     bullet.hasGivenMana = true; // Đánh dấu đã tăng mana
             }
-
+            if (!enemy.active) {
+                deadEnemies.push_back(&enemy); // Ghi nhận quái vừa chết
+            }
             bulletHit = true; // Đánh dấu đã trúng
             bullet.active = false; // Hủy đạn ngay
              // Thoát vòng lặp enemy
@@ -239,6 +367,7 @@ int main(int argc, char *argv[])
                 int bulletDir = (mouse.facingRight ? 1 : -1);
 
     bullets.push_back(Bullet(bulletX, bulletY, bulletDir,1));
+      Mix_PlayChannel(-1, graphics.shootSound, 0);
 }
 
         }
@@ -254,7 +383,7 @@ int main(int argc, char *argv[])
 
 
             bullets2.push_back(Bullet(bulletX, bulletY, bulletDir, 2));
-
+            Mix_PlayChannel(-1, graphics.shootSound, 0);
             mouse.playerMN = 0;
         }
     }
@@ -275,7 +404,7 @@ int main(int argc, char *argv[])
         }
 
         if (hasDisplayedText && SDL_GetTicks() - displayTime < 1000) {
-            graphics.renderTexture(helloText,0 ,100);
+            graphics.renderTexture(ultText,0 ,100);
         }
 
         if (hasDisplayedText && SDL_GetTicks() - displayTime >= 1000) {
@@ -300,10 +429,56 @@ int main(int argc, char *argv[])
     [](const Bullet &b) { return !b.active; }), bullets2.end());
         graphics.presentScene();
         SDL_Delay(10);
-    }}
+    }}bool inGameOver = true;
+while (inGameOver) {
+    SDL_Event e;
+    while (SDL_PollEvent(&e)) {
+        if (e.type == SDL_QUIT) {
+            inGameOver = false;
+            quit = true;
+        }
+
+        int mouseX, mouseY;
+        SDL_GetMouseState(&mouseX, &mouseY);
+        restartButton.checkHover(mouseX, mouseY);
+
+        if (restartButton.handleEvent(&e)) {
+            Mix_PlayChannel(-1, graphics.menuSelectSound, 0);
+            restartGame = true;
+            inGameOver = false;
+        }
+    }
+
     graphics.prepareScene(gameover);
+    restartButton.render(graphics.renderer);
     graphics.presentScene();
-    waitUntilKeyPressed();
+}} while (restartGame && !quit);
+    //restart
+    bool inGameOver = true;
+    while (inGameOver) {
+    SDL_Event e;
+    while (SDL_PollEvent(&e)) {
+        if (e.type == SDL_QUIT) {
+            inGameOver = false;
+            quit = true;
+        }
+
+        int mouseX, mouseY;
+        SDL_GetMouseState(&mouseX, &mouseY);
+        restartButton.checkHover(mouseX, mouseY);
+
+        if (restartButton.handleEvent(&e)) {
+            Mix_PlayChannel(-1, graphics.menuSelectSound, 0);
+            restartGame = true;
+            inGameOver = false;
+        }
+    }
+
+    graphics.prepareScene(gameover);
+    restartButton.render(graphics.renderer);
+    graphics.presentScene();
+    }
+
     SDL_DestroyTexture( background );
     background = NULL;
     SDL_DestroyTexture(gameover);

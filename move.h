@@ -79,4 +79,5 @@ struct Move{
     return mouse.x < 0 || mouse.x >= SCREEN_WIDTH ||mouse.y < 0 || mouse.y >= SCREEN_HEIGHT;
 }
 
+
 #endif // _MOVE__H
