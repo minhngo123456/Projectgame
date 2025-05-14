@@ -4,6 +4,9 @@
 Move mouse;
 
 struct Enemy{
+   int state1 = 0;
+   int state2=0;
+   int timer=0;
    int x,y;
    int speed;
    int blood;
@@ -14,6 +17,7 @@ struct Enemy{
    speed=spd;
    blood=bld;
    active=true;
+
 
    }
    void move(){

@@ -36,6 +36,11 @@ struct Move{
         lastFrameTime=currentTime;
     }
    }
+   void len(){
+   dy=-speed;
+   }
+   void xuong(){
+   dy=speed;}
    void quaphai(){
    dx=speed;
    state=RUNNING_RIGHT;
@@ -66,6 +71,9 @@ struct Move{
         invincible = false;
     }
 }
+ void takedamage(int damage){
+   playerHP-=damage;
+ }
 
    };
    void render(const Move &mouse,const Graphics &graphics){
@@ -75,8 +83,9 @@ struct Move{
    SDL_RenderCopyEx(graphics.renderer, currentFrame, nullptr, &destRect, 0, nullptr, flip);
 
    }
+
    bool gameOver(const Move& mouse) {
-    return mouse.x < 0 || mouse.x >= SCREEN_WIDTH ||mouse.y < 0 || mouse.y >= SCREEN_HEIGHT;
+    return mouse.x < 0 || mouse.x >= SCREEN_WIDTH ||mouse.y < 0 || mouse.y >= SCREEN_HEIGHT||mouse.playerHP<1;
 }
 
 

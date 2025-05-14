@@ -5,6 +5,39 @@
 #include <SDL_mixer.h>
 #include<SDL_ttf.h>
 #include"button.h"
+#include<vector>
+struct Sprite {
+    SDL_Texture* texture;
+    std::vector<SDL_Rect> clips;
+    int currentFrame = 0;
+
+    void init(SDL_Texture* _texture, int frames, const int _clips [][4]) {
+        texture = _texture;
+        SDL_Rect clip;
+        for (int i = 0; i < frames; i++) {
+            clip.x = _clips[i][0];
+            clip.y = _clips[i][1];
+            clip.w = _clips[i][2];
+            clip.h = _clips[i][3];
+            clips.push_back(clip);
+        }
+    }
+    int frameDelay = 10;          // số lần tick() phải gọi trước khi đổi frame
+int frameDelayCounter = 0;    // đếm số lần gọi tick()
+
+void tick() {
+    frameDelayCounter++;
+    if (frameDelayCounter >= frameDelay) {
+        currentFrame = (currentFrame + 1) % clips.size();
+        frameDelayCounter = 0;
+    }
+}
+
+    const SDL_Rect* getCurrentClip() const {
+        return &(clips[currentFrame]);
+    }
+};
+
 struct Graphics {
     SDL_Renderer *renderer;
     SDL_Window *window;
@@ -16,6 +49,7 @@ struct Graphics {
     Mix_Chunk* hitSound;
     Mix_Chunk* enemyDieSound;
     SDL_Texture* characterFrames[5];
+    SDL_Texture* enemyFrames[4];
     enum GameState {
     MENU,
     PLAYING,
@@ -218,8 +252,14 @@ void playSound(Mix_Chunk* sound) {
         Mix_PlayChannel(-1, sound, 0);
     }
 }
+ void render(int x, int y, const Sprite& sprite) {
+        const SDL_Rect* clip = sprite.getCurrentClip();
+        SDL_Rect renderQuad = {x, y, clip->w, clip->h};
+        SDL_RenderCopy(renderer, sprite.texture, clip, &renderQuad);
+    }
 
 
 };
+
 
 #endif

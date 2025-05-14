@@ -9,6 +9,7 @@
 #include<bits/stdc++.h>
 #include"graphics.h"
 #include<SDL_ttf.h>
+#include <ctime>
 std::vector<Bullet> bullets;
 std::vector<Enemy> enemies;
 std::vector<Bullet>bullets2;
@@ -20,7 +21,7 @@ using namespace std;
 
 bool checkCollision(const Move &mouse, const Enemy &enemy) {
     SDL_Rect playerRect = {mouse.x, mouse.y, 256, 256};
-    SDL_Rect enemyRect = {enemy.x, enemy.y, 500, 500};
+    SDL_Rect enemyRect = {enemy.x, enemy.y, 180, 180};
 
     return SDL_HasIntersection(&playerRect, &enemyRect);
 }
@@ -45,15 +46,15 @@ int main(int argc, char *argv[])
     SETTINGS,
     EXIT
     };
+    srand(static_cast<unsigned>(time(nullptr)));
     bool restartGame = false;
     Graphics graphics;
     graphics.init();
     graphics.loadframes();
     graphics.loadSounds();
     SDL_Texture * menu = graphics.loadTexture("img\\menu.png");
-    SDL_Texture * background = graphics.loadTexture("img\\background.jpg");
+    SDL_Texture * background = graphics.loadTexture("img\\background.png");
     SDL_Texture * gameover = graphics.loadTexture("img\\gameover.jpg");
-    SDL_Texture*EM=graphics.loadTexture("img\\enemy1.png");
     TTF_Font* font = graphics.loadFont("arial.ttf", 24);
     TTF_Font* smallFont = graphics.loadFont("arial.ttf", 36);
 
@@ -96,18 +97,32 @@ int main(int argc, char *argv[])
 
 
     Move mouse;
-    mouse.x = 0;
-    mouse.y = 730;
+
+    Sprite mon2;
+    SDL_Texture* mon2Texture = graphics.loadTexture(MON_SPRITE_FILE);
+    mon2.init(mon2Texture, MON2_FRAMES, MON2_CLIPS);
+
+    Sprite mon2attack;
+    SDL_Texture* mon2attackTexture = graphics.loadTexture(MONATTACK_SPRITE_FILE);
+    mon2attack.init(mon2attackTexture, MON2ATTACK_FRAMES, MON2ATTACK_CLIPS);
+
+    Sprite mon2attacked;
+    SDL_Texture* mon2attackedTexture = graphics.loadTexture(MONATTACKED_SPRITE_FILE);
+    mon2attacked.init(mon2attackedTexture, MON2ATTACKED_FRAMES, MON2ATTACKED_CLIPS);
+
+
     GameState gameState=MENU;
     bool quit = false;
     SDL_Event event;
     do {
+
     // RESET mọi thứ khi restart
     mouse = Move();
+    mouse.x = 0;
+    mouse.y = 500;
     bullets.clear();
     bullets2.clear();
     enemies.clear();
-    deadEnemies.clear();
     currentWave = 1;
     waveStartTime = SDL_GetTicks();
     lastSpawnTime = 0;
@@ -264,27 +279,73 @@ int main(int argc, char *argv[])
 
 
 
-    Uint32 currentTime=SDL_GetTicks();
+    // Biến static để giữ giá trị giữa các frame
+static int enemiesToSpawn = 0;
+static int spawnedEnemies = 0;
+static Uint32 lastEnemySpawnTime = 0;
+static Uint32 lastSpawnTime = 0; // thêm dòng này nếu chưa có
+static std::vector<int> usedY;
 
-    if(currentTime>lastSpawnTime+5000){
-            int enemiesToSpawn = 3 + currentWave;
+Uint32 currentTime = SDL_GetTicks();
 
-                for (int i = 0; i < enemiesToSpawn; i++) {
+// Bắt đầu wave mới
+if (currentTime > lastSpawnTime + 5000 && enemiesToSpawn == 0) {
+    enemiesToSpawn = 3 + currentWave;
+    spawnedEnemies = 0;
+    lastEnemySpawnTime = currentTime;
+    lastSpawnTime = currentTime;
+    usedY.clear(); // Clear khi bắt đầu wave mới
+}
 
-                    enemies.push_back(Enemy(SCREEN_WIDTH, 530,
-                                         4 + currentWave,
-                                         2 + (currentWave / 3)));
-                }
-                lastSpawnTime = currentTime;
+// Spawn từng con quái theo thời gian
+if (enemiesToSpawn > 0 && currentTime > lastEnemySpawnTime + 700) {
+    int yPos;
+    bool valid = false;
+    int tries = 0, maxTries = 20;
 
+    while (!valid && tries < maxTries) {
+        yPos = 350 + (rand() % (600 - 350 + 1));
+        valid = true;
+
+        for (int used : usedY) {
+            if (abs(yPos - used) < 60) {
+                valid = false;
+                break;
+            }
+        }
+        tries++;
     }
+
+    // Nếu tìm được vị trí hợp lệ thì spawn
+    if (valid) {
+        usedY.push_back(yPos);
+        enemies.push_back(Enemy(SCREEN_WIDTH, yPos, 4 + currentWave, 2 + (currentWave / 3)));
+        spawnedEnemies++;
+        lastEnemySpawnTime = currentTime;
+    } else {
+        // Nếu thử 20 lần không được, bỏ qua vị trí y, vẫn spawn để không kẹt
+        yPos = 350 + (rand() % (600 - 350 + 1));
+        enemies.push_back(Enemy(SCREEN_WIDTH, yPos, 4 + currentWave, 2 + (currentWave / 3)));
+        spawnedEnemies++;
+        lastEnemySpawnTime = currentTime;
+    }
+
+    // Nếu đủ số lượng thì reset state
+    if (spawnedEnemies >= enemiesToSpawn) {
+        enemiesToSpawn = 0;
+        usedY.clear(); // Clear sau khi spawn hết
+    }
+}
+
+
     if (currentTime - waveStartTime > 30000) { // 30 giây/wave
                 currentWave++;
                 waveStartTime = currentTime;
 
                 // Spawn boss mỗi 5 wave
                 if (currentWave % 5 == 0) {
-                    enemies.push_back(Enemy(SCREEN_WIDTH, 530, 20, 1));
+                    int yPos = 350 + (rand() % (600 - 350 + 1));
+                    enemies.push_back(Enemy(SCREEN_WIDTH, yPos, 20, 1));
                 }
 
                 // Hiển thị thông báo wave
@@ -298,35 +359,20 @@ int main(int argc, char *argv[])
                 SDL_DestroyTexture(waveText);
             }
 
+    mon2.tick();
+    mon2attack.tick();
+    mon2attacked.tick();
+    Uint32 now = SDL_GetTicks();
 
-    for(auto &enemy:enemies){
-        enemy.move();
-        if(checkCollision(mouse,enemy)){
-            mouse.takeDamage(1);
-            if(mouse.playerMN>=5){
-                mouse.playerMN=5;
-            }
 
-            if(mouse.playerHP==0){
-            quit=true;
-         }
-            }
-
-        graphics.renderTexture(EM,enemy.x,enemy.y);
-        SDL_Rect healthBarBg = {enemy.x+250, enemy.y-10 , ((4+currentWave)*50)/4, 5};
-        SDL_SetRenderDrawColor(graphics.renderer, 255, 0, 0, 255);
-        SDL_RenderFillRect(graphics.renderer, &healthBarBg);
-
-        SDL_Rect healthBar = {enemy.x+250, enemy.y-10 , (enemy.blood * 50) / 4, 5};
-        SDL_SetRenderDrawColor(graphics.renderer, 0, 255, 0, 255);
-        SDL_RenderFillRect(graphics.renderer, &healthBar);
-    }
-  for (auto &bullet : bullets2) {
+    for (auto &bullet : bullets2) {
     SDL_Rect bulletRect = {bullet.x, bullet.y, 60, 5};
     for (auto &enemy : enemies) {
-        SDL_Rect enemyRect = {enemy.x, enemy.y, 500, 500};
+        SDL_Rect enemyRect = {enemy.x, enemy.y, 180, 180};
         if (SDL_HasIntersection(&bulletRect, &enemyRect)) {
+            enemy.state1=2;
             enemy.takeDamage(5);
+            Mix_PlayChannel(-1, graphics.hitSound, 0);
             bullet.active = false;
 
         }
@@ -336,8 +382,9 @@ int main(int argc, char *argv[])
             SDL_Rect bulletRect = {bullet.x, bullet.y, 60, 5};
             bool bulletHit = false;
             for (auto &enemy : enemies) {
-                SDL_Rect enemyRect = {enemy.x, enemy.y, 500, 500};
+                SDL_Rect enemyRect = {enemy.x, enemy.y, 180, 180};
                 if (SDL_HasIntersection(&bulletRect, &enemyRect)) {
+                    enemy.state1=2;
                     enemy.takeDamage(1);
                     Mix_PlayChannel(-1, graphics.hitSound, 0);
                     if (bullet.level == 1 && !bullet.hasGivenMana) {
@@ -355,6 +402,44 @@ int main(int argc, char *argv[])
             }
             if (bulletHit) break;
         }
+    for(auto &enemy:enemies){
+        enemy.move();
+        if(enemy.x<=0){
+            mouse.playerHP--;
+        }
+        if(checkCollision(mouse,enemy)){
+            enemy.state2=1;
+            Mix_PlayChannel(-1, graphics.hitSound, 0);
+            mouse.takeDamage(1);
+            if(mouse.playerMN>=5){
+                mouse.playerMN=5;
+            }
+
+
+
+            }else enemy.state2 = 0;
+
+        if(enemy.state1==2){
+            enemy.timer++;
+            graphics.render(enemy.x,enemy.y,mon2attacked);
+            if(enemy.timer>35){
+                enemy.state1=0;
+                enemy.timer=0;
+            }
+        }else if(enemy.state2==1){
+        graphics.render(enemy.x,enemy.y,mon2attack);
+        }else if(enemy.state2==0)graphics.render(enemy.x,enemy.y,mon2);
+
+
+        SDL_Rect healthBarBg = {enemy.x+90, enemy.y-10 , ((4+currentWave)*50)/4, 5};
+        SDL_SetRenderDrawColor(graphics.renderer, 255, 0, 0, 255);
+        SDL_RenderFillRect(graphics.renderer, &healthBarBg);
+
+        SDL_Rect healthBar = {enemy.x+90, enemy.y-10 , (enemy.blood * 50) / 4, 5};
+        SDL_SetRenderDrawColor(graphics.renderer, 0, 255, 0, 255);
+        SDL_RenderFillRect(graphics.renderer, &healthBar);
+    }
+
 
     enemies.erase(std::remove_if(enemies.begin(), enemies.end(),
     [](const Enemy &e) { return !e.active; }), enemies.end());
@@ -391,6 +476,8 @@ int main(int argc, char *argv[])
         if (currentKeyStates[SDL_SCANCODE_LEFT]||currentKeyStates[SDL_SCANCODE_A]) {mouse.quatrai();moving=true;}
 
         else if (currentKeyStates[SDL_SCANCODE_RIGHT]||currentKeyStates[SDL_SCANCODE_D]) {mouse.quaphai();moving=false;}
+        else if (currentKeyStates[SDL_SCANCODE_UP]||currentKeyStates[SDL_SCANCODE_W]) {mouse.len();moving=false;}
+        else if (currentKeyStates[SDL_SCANCODE_DOWN]||currentKeyStates[SDL_SCANCODE_S]) {mouse.xuong();moving=false;}
 
          else if(currentKeyStates[SDL_KEYUP]) {mouse.stop(); }
 
@@ -440,45 +527,33 @@ while (inGameOver) {
 
         int mouseX, mouseY;
         SDL_GetMouseState(&mouseX, &mouseY);
+        bool wasHovered2 = restartButton.isHovered || quitButton.isHovered;
         restartButton.checkHover(mouseX, mouseY);
-
+        quitButton.checkHover(mouseX,mouseY);
+        bool isHovered2 = restartButton.isHovered || quitButton.isHovered;
+        if(!wasHovered2&&isHovered2){
+            Mix_PlayChannel(-1, graphics.menuHoverSound, 0);
+        }
         if (restartButton.handleEvent(&e)) {
             Mix_PlayChannel(-1, graphics.menuSelectSound, 0);
             restartGame = true;
+            inGameOver = false;
+        }
+        if (quitButton.handleEvent(&e)) {
+            Mix_PlayChannel(-1, graphics.menuSelectSound, 0);
+            quit = true;
             inGameOver = false;
         }
     }
 
     graphics.prepareScene(gameover);
     restartButton.render(graphics.renderer);
+    quitButton.render(graphics.renderer);
     graphics.presentScene();
 }} while (restartGame && !quit);
     //restart
-    bool inGameOver = true;
-    while (inGameOver) {
-    SDL_Event e;
-    while (SDL_PollEvent(&e)) {
-        if (e.type == SDL_QUIT) {
-            inGameOver = false;
-            quit = true;
-        }
 
-        int mouseX, mouseY;
-        SDL_GetMouseState(&mouseX, &mouseY);
-        restartButton.checkHover(mouseX, mouseY);
-
-        if (restartButton.handleEvent(&e)) {
-            Mix_PlayChannel(-1, graphics.menuSelectSound, 0);
-            restartGame = true;
-            inGameOver = false;
-        }
-    }
-
-    graphics.prepareScene(gameover);
-    restartButton.render(graphics.renderer);
-    graphics.presentScene();
-    }
-
+    SDL_DestroyTexture( mon2Texture ); mon2Texture = nullptr;
     SDL_DestroyTexture( background );
     background = NULL;
     SDL_DestroyTexture(gameover);
