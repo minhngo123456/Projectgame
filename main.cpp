@@ -13,15 +13,14 @@
 std::vector<Bullet> bullets;
 std::vector<Enemy> enemies;
 std::vector<Bullet>bullets2;
-std::vector<Enemy*> deadEnemies;
 Uint32 lastSpawnTime=0;
 Uint32 displayTime=0;
 bool hasDisplayedText=false;
 using namespace std;
 
 bool checkCollision(const Move &mouse, const Enemy &enemy) {
-    SDL_Rect playerRect = {mouse.x, mouse.y, 256, 256};
-    SDL_Rect enemyRect = {enemy.x, enemy.y, 180, 180};
+    SDL_Rect playerRect = {mouse.x, mouse.y, 128, 128};
+    SDL_Rect enemyRect = {enemy.x, enemy.y, 128, 128};
 
     return SDL_HasIntersection(&playerRect, &enemyRect);
 }
@@ -37,7 +36,6 @@ void waitUntilKeyPressed()
     }
 }
 
-
 int main(int argc, char *argv[])
 {
     enum GameState {
@@ -50,7 +48,7 @@ int main(int argc, char *argv[])
     bool restartGame = false;
     Graphics graphics;
     graphics.init();
-    graphics.loadframes();
+
     graphics.loadSounds();
     SDL_Texture * menu = graphics.loadTexture("img\\menu.png");
     SDL_Texture * background = graphics.loadTexture("img\\background.png");
@@ -97,6 +95,13 @@ int main(int argc, char *argv[])
 
 
     Move mouse;
+    Sprite man;
+    SDL_Texture* manTexture = graphics.loadTexture(MAN_SPRITE_FILE);
+    man.init(manTexture, MAN_FRAMES, MAN_CLIPS);
+
+    Sprite manidle;
+    SDL_Texture* manidleTexture = graphics.loadTexture(MANIDLE_SPRITE_FILE);
+    manidle.init(manidleTexture, MANIDLE_FRAMES, MANIDLE_CLIPS);
 
     Sprite mon2;
     SDL_Texture* mon2Texture = graphics.loadTexture(MON_SPRITE_FILE);
@@ -109,6 +114,14 @@ int main(int argc, char *argv[])
     Sprite mon2attacked;
     SDL_Texture* mon2attackedTexture = graphics.loadTexture(MONATTACKED_SPRITE_FILE);
     mon2attacked.init(mon2attackedTexture, MON2ATTACKED_FRAMES, MON2ATTACKED_CLIPS);
+
+    Sprite manflip;
+    SDL_Texture* manflipTexture = graphics.loadTexture(MANFLIP_SPRITE_FILE);
+    manflip.init(manflipTexture, MANFLIP_FRAMES, MANFLIP_CLIPS);
+
+    Sprite shot;
+    SDL_Texture* shotTexture = graphics.loadTexture(SHOT_SPRITE_FILE);
+    shot.init(shotTexture, SHOT_FRAMES, SHOT_CLIPS);
 
 
     GameState gameState=MENU;
@@ -342,11 +355,6 @@ if (enemiesToSpawn > 0 && currentTime > lastEnemySpawnTime + 700) {
                 currentWave++;
                 waveStartTime = currentTime;
 
-                // Spawn boss mỗi 5 wave
-                if (currentWave % 5 == 0) {
-                    int yPos = 350 + (rand() % (600 - 350 + 1));
-                    enemies.push_back(Enemy(SCREEN_WIDTH, yPos, 20, 1));
-                }
 
                 // Hiển thị thông báo wave
                 SDL_Color waveColor = {255, 215, 0, 255};
@@ -358,7 +366,10 @@ if (enemiesToSpawn > 0 && currentTime > lastEnemySpawnTime + 700) {
                 graphics.renderTexture(waveText, SCREEN_WIDTH/2 - 100, 100);
                 SDL_DestroyTexture(waveText);
             }
-
+    man.tick();
+    manidle.tick();
+    manflip.tick();
+    shot.tick();
     mon2.tick();
     mon2attack.tick();
     mon2attacked.tick();
@@ -368,7 +379,7 @@ if (enemiesToSpawn > 0 && currentTime > lastEnemySpawnTime + 700) {
     for (auto &bullet : bullets2) {
     SDL_Rect bulletRect = {bullet.x, bullet.y, 60, 5};
     for (auto &enemy : enemies) {
-        SDL_Rect enemyRect = {enemy.x, enemy.y, 180, 180};
+        SDL_Rect enemyRect = {enemy.x, enemy.y, 150, 150};
         if (SDL_HasIntersection(&bulletRect, &enemyRect)) {
             enemy.state1=2;
             enemy.takeDamage(5);
@@ -382,7 +393,7 @@ if (enemiesToSpawn > 0 && currentTime > lastEnemySpawnTime + 700) {
             SDL_Rect bulletRect = {bullet.x, bullet.y, 60, 5};
             bool bulletHit = false;
             for (auto &enemy : enemies) {
-                SDL_Rect enemyRect = {enemy.x, enemy.y, 180, 180};
+                SDL_Rect enemyRect = {enemy.x, enemy.y, 150, 150};
                 if (SDL_HasIntersection(&bulletRect, &enemyRect)) {
                     enemy.state1=2;
                     enemy.takeDamage(1);
@@ -390,9 +401,6 @@ if (enemiesToSpawn > 0 && currentTime > lastEnemySpawnTime + 700) {
                     if (bullet.level == 1 && !bullet.hasGivenMana) {
                     mouse.playerMN = std::min(mouse.playerMN + 1, 5);
                     bullet.hasGivenMana = true; // Đánh dấu đã tăng mana
-            }
-            if (!enemy.active) {
-                deadEnemies.push_back(&enemy); // Ghi nhận quái vừa chết
             }
             bulletHit = true; // Đánh dấu đã trúng
             bullet.active = false; // Hủy đạn ngay
@@ -444,26 +452,14 @@ if (enemiesToSpawn > 0 && currentTime > lastEnemySpawnTime + 700) {
     enemies.erase(std::remove_if(enemies.begin(), enemies.end(),
     [](const Enemy &e) { return !e.active; }), enemies.end());
 
-        while (SDL_PollEvent(&event)) {
-                if (event.type == SDL_QUIT) quit = true;
-                if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
-                int bulletX = mouse.x + (mouse.facingRight ? 90 : -10);
-                int bulletY = mouse.y + 90;
-                int bulletDir = (mouse.facingRight ? 1 : -1);
 
-    bullets.push_back(Bullet(bulletX, bulletY, bulletDir,1));
-      Mix_PlayChannel(-1, graphics.shootSound, 0);
-}
-
-        }
 
         const Uint8* currentKeyStates = SDL_GetKeyboardState(NULL);
-        bool moving=false;
         if (currentKeyStates[SDL_SCANCODE_X]) {
     if (mouse.playerMN >= 5) {
         if (bullets2.size() < 5) {
-            int bulletX = mouse.x + (mouse.facingRight ? 90 : -10);
-            int bulletY = mouse.y + 90;
+            int bulletX = mouse.x + (mouse.facingRight ? 90 : 30);
+            int bulletY = mouse.y + 175;
             int bulletDir = (mouse.facingRight ? 1 : -1);
 
 
@@ -473,13 +469,25 @@ if (enemiesToSpawn > 0 && currentTime > lastEnemySpawnTime + 700) {
         }
     }
 }
-        if (currentKeyStates[SDL_SCANCODE_LEFT]||currentKeyStates[SDL_SCANCODE_A]) {mouse.quatrai();moving=true;}
 
-        else if (currentKeyStates[SDL_SCANCODE_RIGHT]||currentKeyStates[SDL_SCANCODE_D]) {mouse.quaphai();moving=false;}
-        else if (currentKeyStates[SDL_SCANCODE_UP]||currentKeyStates[SDL_SCANCODE_W]) {mouse.len();moving=false;}
-        else if (currentKeyStates[SDL_SCANCODE_DOWN]||currentKeyStates[SDL_SCANCODE_S]) {mouse.xuong();moving=false;}
+         if (currentKeyStates[SDL_SCANCODE_LEFT]||currentKeyStates[SDL_SCANCODE_A]) {mouse.quatrai();graphics.render(mouse.x,mouse.y,manflip);}
 
-         else if(currentKeyStates[SDL_KEYUP]) {mouse.stop(); }
+        else if (currentKeyStates[SDL_SCANCODE_RIGHT]||currentKeyStates[SDL_SCANCODE_D]) {mouse.quaphai();graphics.render(mouse.x,mouse.y,man);}
+        else if (currentKeyStates[SDL_SCANCODE_UP]||currentKeyStates[SDL_SCANCODE_W]) {mouse.len();graphics.render(mouse.x,mouse.y,man);}
+        else if (currentKeyStates[SDL_SCANCODE_DOWN]||currentKeyStates[SDL_SCANCODE_S]) {mouse.xuong();graphics.render(mouse.x,mouse.y,man);}
+
+         else if(currentKeyStates[SDL_KEYUP]) {mouse.stop();graphics.render(mouse.x,mouse.y,manidle); }
+         while (SDL_PollEvent(&event)) {
+                if (event.type == SDL_QUIT) quit = true;
+                if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+                int bulletX = mouse.x + (mouse.facingRight ? 160 : 30);
+                int bulletY = mouse.y + 177;
+                int bulletDir = (mouse.facingRight ? 1 : -1);
+      bullets.push_back(Bullet(bulletX, bulletY, bulletDir,1));
+      Mix_PlayChannel(-1, graphics.shootSound, 0);
+}
+
+        }
 
 
 
@@ -498,7 +506,7 @@ if (enemiesToSpawn > 0 && currentTime > lastEnemySpawnTime + 700) {
             hasDisplayedText = false;
         }
 
-        render(mouse,graphics);
+
         graphics.renderHealthBar(graphics.renderer,mouse.playerHP,5,0,10);
         graphics.renderManaBar(graphics.renderer,mouse.playerMN,5,0,50);
         SDL_Color infoColor = {255, 255, 255, 255};
@@ -545,6 +553,7 @@ while (inGameOver) {
             inGameOver = false;
         }
     }
+
 
     graphics.prepareScene(gameover);
     restartButton.render(graphics.renderer);

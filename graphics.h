@@ -22,7 +22,7 @@ struct Sprite {
             clips.push_back(clip);
         }
     }
-    int frameDelay = 10;          // số lần tick() phải gọi trước khi đổi frame
+int frameDelay = 10;          // số lần tick() phải gọi trước khi đổi frame
 int frameDelayCounter = 0;    // đếm số lần gọi tick()
 
 void tick() {
@@ -143,14 +143,7 @@ struct Graphics {
         SDL_DestroyWindow(window);
         SDL_Quit();
     }
-    void loadframes(){
-        characterFrames[0]=loadTexture("img/manmanman.png");
-        characterFrames[1]=loadTexture("img/manphai1.png");
-        characterFrames[2]=loadTexture("img/manphai2.png");
-        characterFrames[3]=loadTexture("img/mantrai1.png");
-        characterFrames[4]=loadTexture("img/mantrai2.png");
 
-    }
     void renderHealthBar(SDL_Renderer* renderer, int hp, int maxHP, int x, int y) {
     int barWidth = 250;
     int barHeight =35;

@@ -76,14 +76,6 @@ struct Move{
  }
 
    };
-   void render(const Move &mouse,const Graphics &graphics){
-   SDL_Rect destRect ={mouse.x,mouse.y,256,256};
-   SDL_Texture* currentFrame=graphics.characterFrames[mouse.frame];
-   SDL_RendererFlip flip = mouse.facingRight ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL;
-   SDL_RenderCopyEx(graphics.renderer, currentFrame, nullptr, &destRect, 0, nullptr, flip);
-
-   }
-
    bool gameOver(const Move& mouse) {
     return mouse.x < 0 || mouse.x >= SCREEN_WIDTH ||mouse.y < 0 || mouse.y >= SCREEN_HEIGHT||mouse.playerHP<1;
 }

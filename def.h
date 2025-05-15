@@ -7,6 +7,51 @@ const char* WINDOW_TITLE = "Dark Castle Expedition";
 const int BUTTON_WIDTH = 300;
 const int BUTTON_HEIGHT = 60;
 const int TOTAL_BUTTONS = 2;
+const char* MAN_SPRITE_FILE = "img\\man.png";
+const int MAN_CLIPS[][4] = {
+    {  0, 0, 128*2, 128*2},
+    { 128*2, 0, 128*2, 128*2},
+    {128*2*2, 0, 128*2, 128*2},
+    {128*3*2, 0, 128*2, 128*2},
+    {128*4*2, 0, 128*2, 128*2},
+    {128*5*2, 0, 128*2, 128*2},
+    {128*6*2, 0, 128*2, 128*2},
+    {128*7*2, 0, 128*2, 128*2},
+    {128*8*2, 0, 128*2, 128*2},
+    {128*9*2, 0, 128*2, 128*2}};
+const int MAN_FRAMES = sizeof(MAN_CLIPS)/sizeof(int)/10;
+const char* MANFLIP_SPRITE_FILE = "img\\manflip.png";
+const int MANFLIP_CLIPS[][4] = {
+    {  0, 0, 128*2, 128*2},
+    { 128*2, 0, 128*2, 128*2},
+    {128*2*2, 0, 128*2, 128*2},
+    {128*3*2, 0, 128*2, 128*2},
+    {128*4*2, 0, 128*2, 128*2},
+    {128*5*2, 0, 128*2, 128*2},
+    {128*6*2, 0, 128*2, 128*2},
+    {128*7*2, 0, 128*2, 128*2},
+    {128*8*2, 0, 128*2, 128*2},
+    {128*9*2, 0, 128*2, 128*2}};
+const int MANFLIP_FRAMES = sizeof(MANFLIP_CLIPS)/sizeof(int)/10;
+const char* MANIDLE_SPRITE_FILE = "img\\manidle.png";
+const int MANIDLE_CLIPS[][4] = {
+    { 0 * 128*2, 0, 128*2, 128*2 },
+    { 1 * 128*2, 0, 128*2, 128*2 },
+    { 2 * 128*2, 0, 128*2, 128*2 },
+    { 3 * 128*2, 0, 128*2, 128*2 },
+    { 4 * 128*2, 0, 128*2, 128*2 },
+    { 5 * 128*2, 0, 128*2, 128*2 }
+};
+const int MANIDLE_FRAMES = sizeof(MANIDLE_CLIPS)/sizeof(int)/6;
+const char* SHOT_SPRITE_FILE = "img\\Shot.png";
+const int SHOT_CLIPS[][4] = {
+    {  0, 0, 256, 256},
+    { 256, 0, 256, 256},
+    {256*2, 0, 256, 256},
+    {256*3, 0, 256, 256},
+    };
+const int SHOT_FRAMES = sizeof(SHOT_CLIPS)/sizeof(int)/4;
+
 const char* MON_SPRITE_FILE = "img\\mons2.png";
 const int MON2_CLIPS[][4] = {
     {  0, 0, 180, 152},

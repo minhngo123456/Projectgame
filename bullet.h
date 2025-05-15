@@ -1,5 +1,6 @@
 #ifndef _BULLET__H_
 #define _BULLET__H_
+#include"move.h"
  struct Bullet{
     int x,y;
     int speed;
