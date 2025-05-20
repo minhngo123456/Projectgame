@@ -52,6 +52,17 @@ const int SHOT_CLIPS[][4] = {
     };
 const int SHOT_FRAMES = sizeof(SHOT_CLIPS)/sizeof(int)/4;
 
+const char* MANIDLEFLIP_SPRITE_FILE = "img\\manidleflip.png";
+const int MANIDLEFLIP_CLIPS[][4] = {
+    { 0 * 128*2, 0, 128*2, 128*2 },
+    { 1 * 128*2, 0, 128*2, 128*2 },
+    { 2 * 128*2, 0, 128*2, 128*2 },
+    { 3 * 128*2, 0, 128*2, 128*2 },
+    { 4 * 128*2, 0, 128*2, 128*2 },
+    { 5 * 128*2, 0, 128*2, 128*2 }
+};
+const int MANIDLEFLIP_FRAMES = sizeof(MANIDLEFLIP_CLIPS)/sizeof(int)/6;
+
 const char* MON_SPRITE_FILE = "img\\mons2.png";
 const int MON2_CLIPS[][4] = {
     {  0, 0, 180, 152},

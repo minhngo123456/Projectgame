@@ -20,21 +20,6 @@ struct Move{
    void move(){
    x+=dx;
    y+=dy;
-   updateAnimation();
-   }
-   void updateAnimation(){
-   Uint32 currentTime=SDL_GetTicks();
-   if(currentTime>lastFrameTime+framedelay){
-        if(dx!=0){
-            state=RUNNING_RIGHT;
-            frame=(frame+1)%framecount;
-        }
-        else{
-         state=IDLE;
-         frame=0;
-        }
-        lastFrameTime=currentTime;
-    }
    }
    void len(){
    dy=-speed;

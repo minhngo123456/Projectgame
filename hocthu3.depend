@@ -283,7 +283,7 @@
 
 1741925729 source:c:\new folder (7)\gamemap.cpp
 
-1747329347 source:c:\new folder (7)\main.cpp
+1747758770 source:c:\new folder (7)\main.cpp
 	<iostream>
 	<SDL.h>
 	<SDL_image.h>
@@ -297,10 +297,10 @@
 	<SDL_ttf.h>
 	<ctime>
 
-1747322943 c:\new folder (7)\move.h
+1747387244 c:\new folder (7)\move.h
 	"graphics.h"
 
-1747318476 c:\new folder (7)\graphics.h
+1747364211 c:\new folder (7)\graphics.h
 	<SDL_image.h>
 	<SDL.h>
 	<SDL_mixer.h>
@@ -311,7 +311,7 @@
 1747148915 c:\new folder (7)\button.h
 	"def.h"
 
-1747328884 c:\new folder (7)\def.h
+1747360529 c:\new folder (7)\def.h
 
 1747322943 c:\new folder (7)\bullet.h
 	"move.h"

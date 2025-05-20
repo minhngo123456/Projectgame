@@ -15,6 +15,8 @@ std::vector<Enemy> enemies;
 std::vector<Bullet>bullets2;
 Uint32 lastSpawnTime=0;
 Uint32 displayTime=0;
+int score = 0;
+int bestScore = 0;
 bool hasDisplayedText=false;
 using namespace std;
 
@@ -33,6 +35,21 @@ void waitUntilKeyPressed()
              (e.type == SDL_KEYDOWN || e.type == SDL_QUIT) )
             return;
         SDL_Delay(100);
+    }
+}
+int loadBestScore() {
+    std::ifstream file("bestscore.txt");
+    int best = 0;
+    if (file >> best) {
+        return best;
+    }
+    return 0;
+}
+
+void saveBestScore(int score) {
+    std::ofstream file("bestscore.txt");
+    if (file) {
+        file << score;
     }
 }
 
@@ -55,7 +72,7 @@ int main(int argc, char *argv[])
     SDL_Texture * gameover = graphics.loadTexture("img\\gameover.jpg");
     TTF_Font* font = graphics.loadFont("arial.ttf", 24);
     TTF_Font* smallFont = graphics.loadFont("arial.ttf", 36);
-
+    TTF_Font* font1 = graphics.loadFont("arial.ttf", 64);
 
     SDL_Color color = {255, 255, 0, 0};
     SDL_Texture* ultText = graphics.renderText("Ready for ulti, press X!", font, color);
@@ -75,7 +92,7 @@ int main(int argc, char *argv[])
     quitButton.normalTexture = graphics.renderText("Quit", smallFont, {255, 255, 255, 255});
     quitButton.hoverTexture = graphics.renderText("Quit", smallFont, {255, 215, 0, 255});
 
-    Button backButton(+SCREEN_WIDTH/2 - BUTTON_WIDTH/2, buttonYStart + buttonSpacing * 2,120,70);
+    Button backButton(10, 10,120,70);
     backButton.normalTexture = graphics.renderText("Back", smallFont, {255, 255, 255, 255});
     backButton.hoverTexture = graphics.renderText("Back", smallFont, {255, 215, 0, 255});
 
@@ -83,12 +100,15 @@ int main(int argc, char *argv[])
     restartButton.normalTexture = graphics.renderText("Restart", smallFont, {255, 255, 255, 255});
     restartButton.hoverTexture = graphics.renderText("Restart", smallFont, {255, 215, 0, 255});
 
-    int volume = MIX_MAX_VOLUME; // âm lượng mặc định
+    int volume = MIX_MAX_VOLUME;
     int sliderX = 700;
     int sliderY = 400;
     int sliderWidth = 300;
     int sliderHeight = 20;
     bool draggingSlider = false;
+
+    bestScore = loadBestScore();
+
 
     int currentWave = 1;
     Uint32 waveStartTime = SDL_GetTicks();
@@ -119,6 +139,11 @@ int main(int argc, char *argv[])
     SDL_Texture* manflipTexture = graphics.loadTexture(MANFLIP_SPRITE_FILE);
     manflip.init(manflipTexture, MANFLIP_FRAMES, MANFLIP_CLIPS);
 
+    Sprite manidleflip;
+    SDL_Texture* manidleflipTexture = graphics.loadTexture(MANIDLEFLIP_SPRITE_FILE);
+    manidleflip.init(manidleflipTexture, MANIDLEFLIP_FRAMES, MANIDLEFLIP_CLIPS);
+
+
     Sprite shot;
     SDL_Texture* shotTexture = graphics.loadTexture(SHOT_SPRITE_FILE);
     shot.init(shotTexture, SHOT_FRAMES, SHOT_CLIPS);
@@ -128,8 +153,7 @@ int main(int argc, char *argv[])
     bool quit = false;
     SDL_Event event;
     do {
-
-    // RESET mọi thứ khi restart
+    score=0;
     mouse = Move();
     mouse.x = 0;
     mouse.y = 500;
@@ -164,7 +188,6 @@ int main(int argc, char *argv[])
                 if(startButton.handleEvent(&event)){
                     Mix_PlayChannel(-1, graphics.menuSelectSound, 0);
                     gameState = PLAYING;
-                    // Phát nhạc nền game khi bắt đầu chơi
                     Mix_PlayMusic(graphics.backgroundMusic, -1);
                 }
 
@@ -174,7 +197,7 @@ int main(int argc, char *argv[])
                     }
                 if(quitButton.handleEvent(&event)){
                     Mix_PlayChannel(-1, graphics.menuSelectSound, 0);
-                    SDL_Delay(300); // Đợi một chút để âm thanh phát xong
+                    SDL_Delay(300);
                     quit = true;
                 }
             }
@@ -186,14 +209,12 @@ int main(int argc, char *argv[])
             graphics.presentScene();
             }
             else if (gameState == SETTINGS) {
-    // Thiết lập vị trí và kích thước của slider (đặt ở giữa màn hình)
     int sliderWidth = 600;
     int sliderHeight = 40;
     int sliderX = (SCREEN_WIDTH - sliderWidth) / 2;
     int sliderY = (SCREEN_HEIGHT - sliderHeight) / 2;
 
     while (SDL_PollEvent(&event)) {
-        // Xử lý kéo slider
         int mouseX, mouseY;
         SDL_GetMouseState(&mouseX, &mouseY);
 
@@ -221,41 +242,53 @@ int main(int argc, char *argv[])
             int newX = mouseX;
             newX = std::max(sliderX, std::min(sliderX + sliderWidth, newX));
             volume = ((newX - sliderX) * MIX_MAX_VOLUME) / sliderWidth;
-            Mix_Volume(-1, volume);         // Âm lượng hiệu ứng
-            Mix_VolumeMusic(volume);        // Âm lượng nhạc nền
+            Mix_Volume(-1, volume);
+            Mix_VolumeMusic(volume);
         }
     }
 
-    // Vẽ UI setting
-    graphics.prepareScene(menu); // hoặc background riêng cho setting nếu có
+    graphics.prepareScene(menu);
 
     SDL_Color textColor = {255, 255, 0, 255};
-    SDL_Texture* settingsText = graphics.renderText("Sound", font, textColor);
-    graphics.renderTexture(settingsText, SCREEN_WIDTH / 2 - 60, sliderY - 100); // đặt tiêu đề phía trên slider
+    SDL_Texture* settingsText = graphics.renderText("Sound", font1, textColor);
+
+    int textW, textH;
+    SDL_QueryTexture(settingsText, NULL, NULL, &textW, &textH);
+
+    int textX = sliderX - textW - 10;
+    int textY = sliderY + (sliderHeight - textH) / 2;
+
+    graphics.renderTexture(settingsText, textX, textY);
     SDL_DestroyTexture(settingsText);
 
-    // Vẽ thanh nền slider
+    // Vẽ thanh slider nền
     SDL_Rect sliderBg = {sliderX, sliderY, sliderWidth, sliderHeight};
     SDL_SetRenderDrawColor(graphics.renderer, 100, 100, 100, 255);
     SDL_RenderFillRect(graphics.renderer, &sliderBg);
 
-    // Vẽ phần đang kéo
+    // Vẽ phần đã được kéo của slider
     int filledWidth = (volume * sliderWidth) / MIX_MAX_VOLUME;
     SDL_Rect sliderFill = {sliderX, sliderY, filledWidth, sliderHeight};
     SDL_SetRenderDrawColor(graphics.renderer, 0, 255, 0, 255);
     SDL_RenderFillRect(graphics.renderer, &sliderFill);
 
+    // Vẽ nút Back
     backButton.render(graphics.renderer);
+
     graphics.presentScene();
 }
 
-            else if(gameState==PLAYING){
-
-
-
-
-
+    else if(gameState==PLAYING){
     graphics.prepareScene(background);
+    SDL_Color white = {255, 255, 255, 255};
+    SDL_Texture* scoreText = graphics.renderText(("Score: " + std::to_string(score)).c_str(), font, white);
+    SDL_Texture* bestScoreText = graphics.renderText(("Best: " + std::to_string(bestScore)).c_str(), font, white);
+
+    graphics.renderTexture(scoreText, 10, 900);
+    graphics.renderTexture(bestScoreText, 10, 940);
+
+    SDL_DestroyTexture(scoreText);
+    SDL_DestroyTexture(bestScoreText);
 
 
         for (auto &bullet : bullets) {
@@ -288,30 +321,25 @@ int main(int argc, char *argv[])
     SDL_SetRenderDrawColor(graphics.renderer, 255, 255, 255, 255);
     SDL_RenderFillRect(graphics.renderer, &bulletRect);
     }
-    // Hiển thị số lượt hiện tại
+    static int enemiesToSpawn = 0;
+    static int spawnedEnemies = 0;
+    static Uint32 lastEnemySpawnTime = 0;
+    static Uint32 lastSpawnTime = 0;
+    static std::vector<int> usedY;
+
+    Uint32 currentTime = SDL_GetTicks();
 
 
-
-    // Biến static để giữ giá trị giữa các frame
-static int enemiesToSpawn = 0;
-static int spawnedEnemies = 0;
-static Uint32 lastEnemySpawnTime = 0;
-static Uint32 lastSpawnTime = 0; // thêm dòng này nếu chưa có
-static std::vector<int> usedY;
-
-Uint32 currentTime = SDL_GetTicks();
-
-// Bắt đầu wave mới
-if (currentTime > lastSpawnTime + 5000 && enemiesToSpawn == 0) {
+    if (currentTime > lastSpawnTime + 5000 && enemiesToSpawn == 0) {
     enemiesToSpawn = 3 + currentWave;
     spawnedEnemies = 0;
     lastEnemySpawnTime = currentTime;
     lastSpawnTime = currentTime;
-    usedY.clear(); // Clear khi bắt đầu wave mới
+    usedY.clear();
 }
 
-// Spawn từng con quái theo thời gian
-if (enemiesToSpawn > 0 && currentTime > lastEnemySpawnTime + 700) {
+
+    if (enemiesToSpawn > 0 && currentTime > lastEnemySpawnTime + 700) {
     int yPos;
     bool valid = false;
     int tries = 0, maxTries = 20;
@@ -329,34 +357,32 @@ if (enemiesToSpawn > 0 && currentTime > lastEnemySpawnTime + 700) {
         tries++;
     }
 
-    // Nếu tìm được vị trí hợp lệ thì spawn
+
     if (valid) {
         usedY.push_back(yPos);
         enemies.push_back(Enemy(SCREEN_WIDTH, yPos, 4 + currentWave, 2 + (currentWave / 3)));
         spawnedEnemies++;
         lastEnemySpawnTime = currentTime;
     } else {
-        // Nếu thử 20 lần không được, bỏ qua vị trí y, vẫn spawn để không kẹt
         yPos = 350 + (rand() % (600 - 350 + 1));
         enemies.push_back(Enemy(SCREEN_WIDTH, yPos, 4 + currentWave, 2 + (currentWave / 3)));
         spawnedEnemies++;
         lastEnemySpawnTime = currentTime;
     }
 
-    // Nếu đủ số lượng thì reset state
     if (spawnedEnemies >= enemiesToSpawn) {
         enemiesToSpawn = 0;
-        usedY.clear(); // Clear sau khi spawn hết
+        usedY.clear();
     }
 }
 
 
-    if (currentTime - waveStartTime > 30000) { // 30 giây/wave
+    if (currentTime - waveStartTime > 30000) {
                 currentWave++;
                 waveStartTime = currentTime;
 
 
-                // Hiển thị thông báo wave
+
                 SDL_Color waveColor = {255, 215, 0, 255};
                 SDL_Texture* waveText = graphics.renderText(
                     ("WAVE " + std::to_string(currentWave)).c_str(),
@@ -368,6 +394,7 @@ if (enemiesToSpawn > 0 && currentTime > lastEnemySpawnTime + 700) {
             }
     man.tick();
     manidle.tick();
+    manidleflip.tick();
     manflip.tick();
     shot.tick();
     mon2.tick();
@@ -383,6 +410,9 @@ if (enemiesToSpawn > 0 && currentTime > lastEnemySpawnTime + 700) {
         if (SDL_HasIntersection(&bulletRect, &enemyRect)) {
             enemy.state1=2;
             enemy.takeDamage(5);
+            if(enemy.blood==0){
+                score+=10*currentWave;
+            }
             Mix_PlayChannel(-1, graphics.hitSound, 0);
             bullet.active = false;
 
@@ -397,14 +427,16 @@ if (enemiesToSpawn > 0 && currentTime > lastEnemySpawnTime + 700) {
                 if (SDL_HasIntersection(&bulletRect, &enemyRect)) {
                     enemy.state1=2;
                     enemy.takeDamage(1);
+                    if(enemy.blood==0){
+                score+=10*currentWave;
+            }
                     Mix_PlayChannel(-1, graphics.hitSound, 0);
                     if (bullet.level == 1 && !bullet.hasGivenMana) {
                     mouse.playerMN = std::min(mouse.playerMN + 1, 5);
-                    bullet.hasGivenMana = true; // Đánh dấu đã tăng mana
+                    bullet.hasGivenMana = true;
             }
-            bulletHit = true; // Đánh dấu đã trúng
-            bullet.active = false; // Hủy đạn ngay
-             // Thoát vòng lặp enemy
+            bulletHit = true;
+            bullet.active = false;
 
                 }
             }
@@ -458,7 +490,7 @@ if (enemiesToSpawn > 0 && currentTime > lastEnemySpawnTime + 700) {
         if (currentKeyStates[SDL_SCANCODE_X]) {
     if (mouse.playerMN >= 5) {
         if (bullets2.size() < 5) {
-            int bulletX = mouse.x + (mouse.facingRight ? 90 : 30);
+            int bulletX = mouse.x + (mouse.facingRight ? 160 : 30);
             int bulletY = mouse.y + 175;
             int bulletDir = (mouse.facingRight ? 1 : -1);
 
@@ -475,8 +507,9 @@ if (enemiesToSpawn > 0 && currentTime > lastEnemySpawnTime + 700) {
         else if (currentKeyStates[SDL_SCANCODE_RIGHT]||currentKeyStates[SDL_SCANCODE_D]) {mouse.quaphai();graphics.render(mouse.x,mouse.y,man);}
         else if (currentKeyStates[SDL_SCANCODE_UP]||currentKeyStates[SDL_SCANCODE_W]) {mouse.len();graphics.render(mouse.x,mouse.y,man);}
         else if (currentKeyStates[SDL_SCANCODE_DOWN]||currentKeyStates[SDL_SCANCODE_S]) {mouse.xuong();graphics.render(mouse.x,mouse.y,man);}
+        else if(mouse.facingRight&&currentKeyStates[SDL_KEYUP]) {mouse.stop();graphics.render(mouse.x,mouse.y,manidle); }
+        else if(!mouse.facingRight&&currentKeyStates[SDL_KEYUP]) {mouse.stop();graphics.render(mouse.x,mouse.y,manidleflip); }
 
-         else if(currentKeyStates[SDL_KEYUP]) {mouse.stop();graphics.render(mouse.x,mouse.y,manidle); }
          while (SDL_PollEvent(&event)) {
                 if (event.type == SDL_QUIT) quit = true;
                 if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
@@ -553,20 +586,46 @@ while (inGameOver) {
             inGameOver = false;
         }
     }
-
+    if (score > bestScore) {
+    bestScore = score;
+    saveBestScore(score);
+}
 
     graphics.prepareScene(gameover);
     restartButton.render(graphics.renderer);
     quitButton.render(graphics.renderer);
     graphics.presentScene();
 }} while (restartGame && !quit);
-    //restart
 
-    SDL_DestroyTexture( mon2Texture ); mon2Texture = nullptr;
-    SDL_DestroyTexture( background );
-    background = NULL;
+    SDL_DestroyTexture(menu);
+    SDL_DestroyTexture(background);
     SDL_DestroyTexture(gameover);
-    gameover=NULL;
+    SDL_DestroyTexture(ultText);
+    SDL_DestroyTexture(startButton.normalTexture);
+    SDL_DestroyTexture(startButton.hoverTexture);
+    SDL_DestroyTexture(settingsButton.normalTexture);
+    SDL_DestroyTexture(settingsButton.hoverTexture);
+    SDL_DestroyTexture(quitButton.normalTexture);
+    SDL_DestroyTexture(quitButton.hoverTexture);
+    SDL_DestroyTexture(backButton.normalTexture);
+    SDL_DestroyTexture(backButton.hoverTexture);
+    SDL_DestroyTexture(restartButton.normalTexture);
+    SDL_DestroyTexture(restartButton.hoverTexture);
+    SDL_DestroyTexture(manTexture);
+    SDL_DestroyTexture(manidleTexture);
+    SDL_DestroyTexture(manflipTexture);
+    SDL_DestroyTexture(manidleflipTexture);
+    SDL_DestroyTexture(mon2Texture);
+    SDL_DestroyTexture(mon2attackTexture);
+    SDL_DestroyTexture(mon2attackedTexture);
+    SDL_DestroyTexture(shotTexture);
+    TTF_CloseFont(font);
+    TTF_CloseFont(smallFont);
+    Mix_FreeMusic(graphics.menuOpenSound);
+    Mix_FreeMusic(graphics.backgroundMusic);
+    Mix_FreeChunk(graphics.menuHoverSound);
+    Mix_FreeChunk(graphics.menuSelectSound);
+    Mix_FreeChunk(graphics.hitSound);
     graphics.quit();
     return 0;
 
