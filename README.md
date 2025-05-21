@@ -1,4 +1,4 @@
-**Ngô Nguyễn Nhật Minh - MSV: 24021566**
+**Ngô Nguyễn Nhật Minh - MSV: 24021566** \endl
 **Chủ đề:** Game bắn quái
 **Yêu cầu: **
 • C++11
