@@ -24,7 +24,7 @@
   
 **Nguồn tham khảo:** Kênh _**Youtube "Let's make game"**, tham khảo một số thuật toán khó ở chatGPT và tài liệu tham khảo của cô Châu._  
   
-**Hình ảnh: ** _craftpix.com_  
+**Hình ảnh:** _craftpix.com_  
   
-**Âm thanh: ** _pixabay.com_  
+**Âm thanh:** _pixabay.com_  
  
