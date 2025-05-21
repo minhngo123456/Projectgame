@@ -21,7 +21,7 @@ bool hasDisplayedText=false;
 using namespace std;
 
 bool checkCollision(const Move &mouse, const Enemy &enemy) {
-    SDL_Rect playerRect = {mouse.x, mouse.y, 128, 128};
+    SDL_Rect playerRect = {mouse.x, mouse.y, 128, 100};
     SDL_Rect enemyRect = {enemy.x, enemy.y, 128, 128};
 
     return SDL_HasIntersection(&playerRect, &enemyRect);
@@ -261,20 +261,16 @@ int main(int argc, char *argv[])
     graphics.renderTexture(settingsText, textX, textY);
     SDL_DestroyTexture(settingsText);
 
-    // Vẽ thanh slider nền
     SDL_Rect sliderBg = {sliderX, sliderY, sliderWidth, sliderHeight};
     SDL_SetRenderDrawColor(graphics.renderer, 100, 100, 100, 255);
     SDL_RenderFillRect(graphics.renderer, &sliderBg);
 
-    // Vẽ phần đã được kéo của slider
     int filledWidth = (volume * sliderWidth) / MIX_MAX_VOLUME;
     SDL_Rect sliderFill = {sliderX, sliderY, filledWidth, sliderHeight};
     SDL_SetRenderDrawColor(graphics.renderer, 0, 255, 0, 255);
     SDL_RenderFillRect(graphics.renderer, &sliderFill);
 
-    // Vẽ nút Back
     backButton.render(graphics.renderer);
-
     graphics.presentScene();
 }
 
@@ -291,7 +287,7 @@ int main(int argc, char *argv[])
     SDL_DestroyTexture(bestScoreText);
 
 
-        for (auto &bullet : bullets) {
+     for (auto &bullet : bullets) {
             bullet.move();
            }
 
@@ -376,22 +372,6 @@ int main(int argc, char *argv[])
     }
 }
 
-
-    if (currentTime - waveStartTime > 30000) {
-                currentWave++;
-                waveStartTime = currentTime;
-
-
-
-                SDL_Color waveColor = {255, 215, 0, 255};
-                SDL_Texture* waveText = graphics.renderText(
-                    ("WAVE " + std::to_string(currentWave)).c_str(),
-                    font,
-                    waveColor
-                );
-                graphics.renderTexture(waveText, SCREEN_WIDTH/2 - 100, 100);
-                SDL_DestroyTexture(waveText);
-            }
     man.tick();
     manidle.tick();
     manidleflip.tick();
@@ -501,16 +481,7 @@ int main(int argc, char *argv[])
         }
     }
 }
-
-         if (currentKeyStates[SDL_SCANCODE_LEFT]||currentKeyStates[SDL_SCANCODE_A]) {mouse.quatrai();graphics.render(mouse.x,mouse.y,manflip);}
-
-        else if (currentKeyStates[SDL_SCANCODE_RIGHT]||currentKeyStates[SDL_SCANCODE_D]) {mouse.quaphai();graphics.render(mouse.x,mouse.y,man);}
-        else if (currentKeyStates[SDL_SCANCODE_UP]||currentKeyStates[SDL_SCANCODE_W]) {mouse.len();graphics.render(mouse.x,mouse.y,man);}
-        else if (currentKeyStates[SDL_SCANCODE_DOWN]||currentKeyStates[SDL_SCANCODE_S]) {mouse.xuong();graphics.render(mouse.x,mouse.y,man);}
-        else if(mouse.facingRight&&currentKeyStates[SDL_KEYUP]) {mouse.stop();graphics.render(mouse.x,mouse.y,manidle); }
-        else if(!mouse.facingRight&&currentKeyStates[SDL_KEYUP]) {mouse.stop();graphics.render(mouse.x,mouse.y,manidleflip); }
-
-         while (SDL_PollEvent(&event)) {
+while (SDL_PollEvent(&event)) {
                 if (event.type == SDL_QUIT) quit = true;
                 if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
                 int bulletX = mouse.x + (mouse.facingRight ? 160 : 30);
@@ -521,9 +492,13 @@ int main(int argc, char *argv[])
 }
 
         }
+         if (currentKeyStates[SDL_SCANCODE_LEFT]||currentKeyStates[SDL_SCANCODE_A]) {mouse.quatrai();graphics.render(mouse.x,mouse.y,manflip);}
 
-
-
+        else if (currentKeyStates[SDL_SCANCODE_RIGHT]||currentKeyStates[SDL_SCANCODE_D]) {mouse.quaphai();graphics.render(mouse.x,mouse.y,man);}
+        else if (currentKeyStates[SDL_SCANCODE_UP]||currentKeyStates[SDL_SCANCODE_W]) {mouse.len();graphics.render(mouse.x,mouse.y,man);}
+        else if (currentKeyStates[SDL_SCANCODE_DOWN]||currentKeyStates[SDL_SCANCODE_S]) {mouse.xuong();graphics.render(mouse.x,mouse.y,man);}
+        else if(mouse.facingRight&&currentKeyStates[SDL_KEYUP]) {mouse.stop();graphics.render(mouse.x,mouse.y,manidle); }
+        else if(!mouse.facingRight&&currentKeyStates[SDL_KEYUP]) {mouse.stop();graphics.render(mouse.x,mouse.y,manidleflip); }
 
         mouse.move();
         if (mouse.playerMN == 5 && !hasDisplayedText) {
